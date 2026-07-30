@@ -45,19 +45,19 @@ no hosted service in this iteration.
 **Purpose**: Repository scaffolding, tooling, and the local-only infrastructure this
 iteration needs — no application logic yet.
 
-- [ ] T001 Create `backend/`, `frontend/`, `eval/`, `infra/` directory skeletons per plan.md's Project Structure
-- [ ] T002 [P] Initialize backend Python project (`backend/pyproject.toml`) with FastAPI, Pydantic v2, SQLAlchemy[asyncio], aiosqlite, alembic, azure-identity, openai, azure-search-documents, azure-keyvault-secrets, bcrypt, pyjwt, langsmith, azure-monitor-opentelemetry, pytest, pytest-asyncio, httpx, ruff, black
-- [ ] T003 [P] Initialize frontend project (`frontend/package.json`) with React 18, TypeScript, Vite, React Router, eslint, prettier, vitest, @testing-library/react
-- [ ] T004 [P] Configure backend lint/format (ruff + black) in `backend/pyproject.toml`
-- [ ] T005 [P] Configure frontend lint/format (`frontend/.eslintrc.cjs`, `frontend/.prettierrc`)
-- [ ] T006 [P] Create `backend/.env.example` documenting non-secret settings only (`AZURE_OPENAI_ENDPOINT` for the existing `aoai-jab4fcusuxtqs` resource, `AZURE_OPENAI_DEPLOYMENT=gpt-5.1`, `AZURE_SEARCH_ENDPOINT`, `AZURE_SEARCH_INDEX_NAME`, `KEY_VAULT_URI`) plus a comment pointing at the manual LangSmith-key step from T012
-- [ ] T007 [P] Write `infra/main.bicep` orchestrating `search.bicep`, `keyvault.bicep`, `monitoring.bicep`, and `roles.bicep`, taking `principalId`, `existingOpenAiName`, and `existingOpenAiResourceGroup` parameters — no App Service or new Azure OpenAI module
-- [ ] T008 [P] Write `infra/modules/search.bicep` (the one new resource this project provisions: Azure AI Search, Free SKU)
-- [ ] T009 [P] Write `infra/modules/keyvault.bicep`: RBAC-mode Key Vault that also generates a random JWT signing secret (secure Bicep parameter/`uniqueString`-derived value) and writes it as a Key Vault secret resource at provision time — closes the "who populates the JWT secret" gap from `/speckit-analyze` finding U1
-- [ ] T010 [P] Write `infra/modules/monitoring.bicep` (Application Insights + Log Analytics workspace)
-- [ ] T011 Write `infra/modules/roles.bicep` assigning Search Index Data Contributor/Reader and Key Vault Secrets User on the new resources, and Cognitive Services OpenAI User on the *existing* `aoai-jab4fcusuxtqs` resource, all scoped to the `principalId` parameter (the developer's `az login` object ID for now) (depends on T008–T010)
-- [ ] T012 [P] Document the one-time manual step to set the LangSmith API key into the provisioned Key Vault (`az keyvault secret set --vault-name ... --name LangSmithApiKey --value ...`) in `quickstart.md` — closes the LangSmith-key half of finding U1
-- [ ] T013 [P] Add `.github/workflows/ci.yml` running ruff + black --check + pytest (backend), eslint + prettier --check + vitest (frontend), and a secret-scan step (e.g., gitleaks) — all four gate merge per constitution Principle IV
+- [X] T001 Create `backend/`, `frontend/`, `eval/`, `infra/` directory skeletons per plan.md's Project Structure
+- [X] T002 [P] Initialize backend Python project (`backend/pyproject.toml`) with FastAPI, Pydantic v2, SQLAlchemy[asyncio], aiosqlite, alembic, azure-identity, openai, azure-search-documents, azure-keyvault-secrets, bcrypt, pyjwt, langsmith, azure-monitor-opentelemetry, pytest, pytest-asyncio, httpx, ruff, black
+- [X] T003 [P] Initialize frontend project (`frontend/package.json`) with React 18, TypeScript, Vite, React Router, eslint, prettier, vitest, @testing-library/react
+- [X] T004 [P] Configure backend lint/format (ruff + black) in `backend/pyproject.toml`
+- [X] T005 [P] Configure frontend lint/format (`frontend/.eslintrc.cjs`, `frontend/.prettierrc`)
+- [X] T006 [P] Create `backend/.env.example` documenting non-secret settings only (`AZURE_OPENAI_ENDPOINT` for the existing `aoai-jab4fcusuxtqs` resource, `AZURE_OPENAI_DEPLOYMENT=gpt-5.1`, `AZURE_SEARCH_ENDPOINT`, `AZURE_SEARCH_INDEX_NAME`, `KEY_VAULT_URI`) plus a comment pointing at the manual LangSmith-key step from T012
+- [X] T007 [P] Write `infra/main.bicep` orchestrating `search.bicep`, `keyvault.bicep`, `monitoring.bicep`, and `roles.bicep`, taking `principalId`, `existingOpenAiName`, and `existingOpenAiResourceGroup` parameters — no App Service or new Azure OpenAI module
+- [X] T008 [P] Write `infra/modules/search.bicep` (the one new resource this project provisions: Azure AI Search, Free SKU)
+- [X] T009 [P] Write `infra/modules/keyvault.bicep`: RBAC-mode Key Vault that also generates a random JWT signing secret (secure Bicep parameter/`uniqueString`-derived value) and writes it as a Key Vault secret resource at provision time — closes the "who populates the JWT secret" gap from `/speckit-analyze` finding U1
+- [X] T010 [P] Write `infra/modules/monitoring.bicep` (Application Insights + Log Analytics workspace)
+- [X] T011 Write `infra/modules/roles.bicep` assigning Search Index Data Contributor/Reader and Key Vault Secrets User on the new resources, and Cognitive Services OpenAI User on the *existing* `aoai-jab4fcusuxtqs` resource, all scoped to the `principalId` parameter (the developer's `az login` object ID for now) (depends on T008–T010)
+- [X] T012 [P] Document the one-time manual step to set the LangSmith API key into the provisioned Key Vault (`az keyvault secret set --vault-name ... --name LangSmithApiKey --value ...`) in `quickstart.md` — closes the LangSmith-key half of finding U1
+- [X] T013 [P] Add `.github/workflows/ci.yml` running ruff + black --check + pytest (backend), eslint + prettier --check + vitest (frontend), and a secret-scan step (e.g., gitleaks) — all four gate merge per constitution Principle IV
 
 ---
 
@@ -68,16 +68,16 @@ error handling, app wiring, telemetry).
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete.
 
-- [ ] T014 Implement async SQLAlchemy engine/session setup in `backend/src/core/db.py`
-- [ ] T015 Initialize Alembic in `backend/alembic/` wired to the SQLAlchemy models metadata
-- [ ] T016 Define the `User` ORM model (id, unique email, unique username, password_hash, role, created_at) in `backend/src/models/db.py`
-- [ ] T017 Generate and apply the initial Alembic migration for the `users` table in `backend/alembic/versions/`
-- [ ] T018 [P] Define the shared `Error` response Pydantic schema in `backend/src/models/schemas.py`
-- [ ] T019 Implement a custom exception hierarchy and FastAPI exception handlers mapping internal failures to non-leaking `Error` responses in `backend/src/core/errors.py`
-- [ ] T020 Implement JWT encode/decode utilities and the `get_current_user` / `require_admin` FastAPI dependencies in `backend/src/core/security.py`
-- [ ] T021 Implement the settings loader in `backend/src/core/config.py`: non-secret settings (existing Azure OpenAI endpoint/deployment, new Azure AI Search endpoint) plus Key Vault secret resolution (JWT signing key, LangSmith API key) via `DefaultAzureCredential`
-- [ ] T022 Create the FastAPI app factory with router-registration skeleton and CORS configured for the local frontend dev server in `backend/src/main.py`
-- [ ] T023 Bootstrap Application Insights/OpenTelemetry auto-instrumentation and a request-stage-tagging middleware (`upload`/`retrieval`/`generation`) in `backend/src/core/telemetry.py`
+- [X] T014 Implement async SQLAlchemy engine/session setup in `backend/src/core/db.py`
+- [X] T015 Initialize Alembic in `backend/alembic/` wired to the SQLAlchemy models metadata
+- [X] T016 Define the `User` ORM model (id, unique email, unique username, password_hash, role, created_at) in `backend/src/models/db.py`
+- [X] T017 Generate and apply the initial Alembic migration for the `users` table in `backend/alembic/versions/`
+- [X] T018 [P] Define the shared `Error` response Pydantic schema in `backend/src/models/schemas.py`
+- [X] T019 Implement a custom exception hierarchy and FastAPI exception handlers mapping internal failures to non-leaking `Error` responses in `backend/src/core/errors.py`
+- [X] T020 Implement JWT encode/decode utilities and the `get_current_user` / `require_admin` FastAPI dependencies in `backend/src/core/security.py`
+- [X] T021 Implement the settings loader in `backend/src/core/config.py`: non-secret settings (existing Azure OpenAI endpoint/deployment, new Azure AI Search endpoint) plus Key Vault secret resolution (JWT signing key, LangSmith API key) via `DefaultAzureCredential`
+- [X] T022 Create the FastAPI app factory with router-registration skeleton and CORS configured for the local frontend dev server in `backend/src/main.py`
+- [X] T023 Bootstrap Application Insights/OpenTelemetry auto-instrumentation and a request-stage-tagging middleware (`upload`/`retrieval`/`generation`) in `backend/src/core/telemetry.py`
 
 **Checkpoint**: Foundation ready — user story implementation can now begin.
 
@@ -97,21 +97,21 @@ succeed and an incorrect password is rejected.
 
 > Write these tests FIRST; confirm they FAIL before implementation.
 
-- [ ] T024 [P] [US1] Contract test `POST /auth/register` (success, duplicate email/username → 409, malformed input → 422) in `backend/tests/contract/test_auth_register.py`
-- [ ] T025 [P] [US1] Contract test `POST /auth/login` (success via email, success via username, wrong password / unrecognized identifier → single generic 401) in `backend/tests/contract/test_auth_login.py`
-- [ ] T026 [P] [US1] Integration test: register → log out → log in with email → log in with username in `backend/tests/integration/test_auth_flow.py`
-- [ ] T027 [P] [US1] Unit tests for bcrypt hashing and minimum password-length validation in `backend/tests/unit/test_auth_service.py`
+- [X] T024 [P] [US1] Contract test `POST /auth/register` (success, duplicate email/username → 409, malformed input → 422) in `backend/tests/contract/test_auth_register.py`
+- [X] T025 [P] [US1] Contract test `POST /auth/login` (success via email, success via username, wrong password / unrecognized identifier → single generic 401) in `backend/tests/contract/test_auth_login.py`
+- [X] T026 [P] [US1] Integration test: register → log out → log in with email → log in with username in `backend/tests/integration/test_auth_flow.py`
+- [X] T027 [P] [US1] Unit tests for bcrypt hashing and minimum password-length validation in `backend/tests/unit/test_auth_service.py`
 
 ### Implementation for User Story 1
 
-- [ ] T028 [P] [US1] Add `RegisterRequest`, `LoginRequest`, `AuthToken` Pydantic schemas in `backend/src/models/schemas.py`
-- [ ] T029 [US1] Implement `backend/src/services/auth_service.py`: `register_user` (bcrypt hash, DB unique-constraint conflict → 409) and `authenticate_user` (email-or-username lookup, single generic 401 on any mismatch) (depends on T016, T020, T028)
-- [ ] T030 [US1] Implement `POST /auth/register` and `POST /auth/login` routes in `backend/src/api/auth.py` (depends on T029)
-- [ ] T031 [US1] Register the auth router in `backend/src/main.py` (depends on T022, T030)
-- [ ] T032 [P] [US1] Implement `RegisterForm` component in `frontend/src/components/RegisterForm.tsx`
-- [ ] T033 [P] [US1] Implement `LoginForm` component in `frontend/src/components/LoginForm.tsx`
-- [ ] T034 [US1] Implement the auth API client and auth context (stores the JWT, attaches it as an Authorization header) in `frontend/src/services/auth.ts`
-- [ ] T035 [US1] Implement `Register` and `Login` pages wired to the components/context above in `frontend/src/pages/Register.tsx` and `frontend/src/pages/Login.tsx` (depends on T032, T033, T034)
+- [X] T028 [P] [US1] Add `RegisterRequest`, `LoginRequest`, `AuthToken` Pydantic schemas in `backend/src/models/schemas.py`
+- [X] T029 [US1] Implement `backend/src/services/auth_service.py`: `register_user` (bcrypt hash, DB unique-constraint conflict → 409) and `authenticate_user` (email-or-username lookup, single generic 401 on any mismatch) (depends on T016, T020, T028)
+- [X] T030 [US1] Implement `POST /auth/register` and `POST /auth/login` routes in `backend/src/api/auth.py` (depends on T029)
+- [X] T031 [US1] Register the auth router in `backend/src/main.py` (depends on T022, T030)
+- [X] T032 [P] [US1] Implement `RegisterForm` component in `frontend/src/components/RegisterForm.tsx`
+- [X] T033 [P] [US1] Implement `LoginForm` component in `frontend/src/components/LoginForm.tsx`
+- [X] T034 [US1] Implement the auth API client and auth context (stores the JWT, attaches it as an Authorization header) in `frontend/src/services/auth.ts`
+- [X] T035 [US1] Implement `Register` and `Login` pages wired to the components/context above in `frontend/src/pages/Register.tsx` and `frontend/src/pages/Login.tsx` (depends on T032, T033, T034)
 
 **Checkpoint**: User Story 1 is independently functional and testable.
 
@@ -259,7 +259,7 @@ latency, token consumption, and error rate are all observable, broken down by st
 stories.
 
 - [ ] T096 [P] Fill remaining backend unit-test coverage for edge cases across services (empty/malformed inputs) in `backend/tests/unit/`
-- [ ] T097 [P] Fill remaining frontend Vitest coverage for `RegisterForm`/`LoginForm`/`DocumentUpload`/`HistoryList`/`AdminDashboard` in `frontend/tests/`
+- [ ] T097 [P] Fill remaining frontend Vitest coverage for `DocumentUpload`/`HistoryList`/`AdminDashboard` in `frontend/tests/` (`RegisterForm`/`LoginForm` were already covered in US1, `frontend/tests/components/`)
 - [ ] T098 Run the full `quickstart.md` local-validation scenario set end-to-end (including the Infrastructure section's `az deployment group create` step and manual scenarios 1–6)
 - [ ] T099 Security hardening pass: verify no failure path leaks internal details, cross-checked against FR-004/FR-009/FR-021
 - [ ] T100 Performance check: measure question-answer latency against the ≥95%-within-15s target (SC-011) with a representative document set, running locally against the real Azure AI Search/Azure OpenAI resources
