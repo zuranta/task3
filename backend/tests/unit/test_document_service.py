@@ -69,7 +69,32 @@ def test_chunk_document_splits_long_text_into_multiple_labeled_chunks():
 
     assert len(chunks) > 1
     assert len(chunks) == len(labels)
-    assert all(label == "Document" for label in labels)
+    assert labels == [f"Section {i} of {len(chunks)}" for i in range(1, len(chunks) + 1)]
+
+
+def test_chunk_document_single_chunk_text_is_labeled_section_1_of_1():
+    chunks, labels = document_service.chunk_document(DocumentFormat.txt, b"A short document.")
+
+    assert labels == ["Section 1 of 1"]
+
+
+def test_chunk_document_pdf_combines_page_number_with_section_number(monkeypatch):
+    long_page_text = "word " * 1000  # long enough to split into multiple chunks
+    monkeypatch.setattr(
+        document_service,
+        "_extract",
+        lambda fmt, content: [("Page 1", long_page_text), ("Page 2", "A short second page.")],
+    )
+
+    chunks, labels = document_service.chunk_document(DocumentFormat.pdf, b"unused")
+
+    chunk_size = document_service._CHUNK_SIZE
+    page_1_chunks = -(-len(long_page_text) // chunk_size)  # ceil division
+    assert labels[:page_1_chunks] == [
+        f"Page 1, Section {i} of {page_1_chunks}" for i in range(1, page_1_chunks + 1)
+    ]
+    assert labels[page_1_chunks:] == ["Page 2, Section 1 of 1"]
+    assert len(chunks) == len(labels)
 
 
 @pytest.mark.asyncio

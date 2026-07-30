@@ -35,8 +35,8 @@ def _detect_format(filename: str) -> DocumentFormat:
     return fmt
 
 
-def _extract_pdf(content: bytes) -> list[tuple[str, str]]:
-    """Returns a list of (location_label, text), one entry per page."""
+def _extract_pdf(content: bytes) -> list[tuple[str | None, str]]:
+    """Returns a list of (page_label, text), one entry per page."""
     try:
         reader = pypdf.PdfReader(io.BytesIO(content))
     except Exception as exc:
@@ -49,25 +49,25 @@ def _extract_pdf(content: bytes) -> list[tuple[str, str]]:
         raise BadRequestError("The file is corrupted and could not be read.") from exc
 
 
-def _extract_docx(content: bytes) -> list[tuple[str, str]]:
+def _extract_docx(content: bytes) -> list[tuple[str | None, str]]:
     try:
         document = docx.Document(io.BytesIO(content))
     except Exception as exc:
         raise BadRequestError(
             "The file is corrupted or password-protected and could not be read."
         ) from exc
-    return [("Document", "\n".join(p.text for p in document.paragraphs))]
+    return [(None, "\n".join(p.text for p in document.paragraphs))]
 
 
-def _extract_text(content: bytes) -> list[tuple[str, str]]:
+def _extract_text(content: bytes) -> list[tuple[str | None, str]]:
     try:
         text = content.decode("utf-8")
     except UnicodeDecodeError as exc:
         raise BadRequestError("The file is corrupted and could not be read.") from exc
-    return [("Document", text)]
+    return [(None, text)]
 
 
-def _extract(fmt: DocumentFormat, content: bytes) -> list[tuple[str, str]]:
+def _extract(fmt: DocumentFormat, content: bytes) -> list[tuple[str | None, str]]:
     if fmt == DocumentFormat.pdf:
         return _extract_pdf(content)
     if fmt == DocumentFormat.docx:
@@ -76,19 +76,27 @@ def _extract(fmt: DocumentFormat, content: bytes) -> list[tuple[str, str]]:
 
 
 def chunk_document(fmt: DocumentFormat, content: bytes) -> tuple[list[str], list[str]]:
-    """Returns (chunks, location_labels) -- one location label per chunk."""
+    """Returns (chunks, location_labels) -- one location label per chunk, combining
+    the page number (pdf only, since other formats have no native page concept)
+    with a 1-indexed section number so multiple chunks from the same page/document
+    stay distinguishable in citations (e.g. "Page 2, Section 1 of 3")."""
     sections = _extract(fmt, content)
     chunks: list[str] = []
     labels: list[str] = []
-    for label, text in sections:
+    for page_label, text in sections:
         text = text.strip()
         if not text:
             continue
-        for start in range(0, len(text), _CHUNK_SIZE):
-            piece = text[start : start + _CHUNK_SIZE].strip()
-            if piece:
-                chunks.append(piece)
-                labels.append(label)
+        pieces = [
+            piece
+            for start in range(0, len(text), _CHUNK_SIZE)
+            if (piece := text[start : start + _CHUNK_SIZE].strip())
+        ]
+        for i, piece in enumerate(pieces, start=1):
+            section_label = f"Section {i} of {len(pieces)}"
+            label = f"{page_label}, {section_label}" if page_label else section_label
+            chunks.append(piece)
+            labels.append(label)
     if not chunks:
         raise BadRequestError("The file is empty and contains no extractable text.")
     return chunks, labels

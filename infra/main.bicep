@@ -24,6 +24,9 @@ param baseName string = 'ragqa'
 @description('Azure region for all new resources.')
 param location string = resourceGroup().location
 
+@description('Azure region for the Search resource specifically -- overridable independently of `location` since Free-tier Search capacity is scarce and not evenly available across regions.')
+param searchLocation string = location
+
 var searchServiceName = '${baseName}-search-${uniqueString(resourceGroup().id)}'
 var keyVaultName = '${baseName}-kv-${uniqueString(resourceGroup().id)}'
 var logAnalyticsName = '${baseName}-logs-${uniqueString(resourceGroup().id)}'
@@ -33,7 +36,7 @@ module search 'modules/search.bicep' = {
   name: 'search-deployment'
   params: {
     searchServiceName: searchServiceName
-    location: location
+    location: searchLocation
   }
 }
 
@@ -61,8 +64,20 @@ module roles 'modules/roles.bicep' = {
     principalType: principalType
     searchServiceName: search.outputs.searchServiceName
     keyVaultName: keyVault.outputs.keyVaultName
+  }
+}
+
+// A separate module scoped to the existing Azure OpenAI resource's own resource
+// group -- which may differ from this deployment's -- since a role assignment on
+// a cross-resource-group resource can only be created by a module deployed at
+// that resource's scope (see modules/openai-role.bicep).
+module openAiRole 'modules/openai-role.bicep' = {
+  name: 'openai-role-deployment'
+  scope: resourceGroup(existingOpenAiResourceGroup)
+  params: {
+    principalId: principalId
+    principalType: principalType
     existingOpenAiName: existingOpenAiName
-    existingOpenAiResourceGroup: existingOpenAiResourceGroup
   }
 }
 
