@@ -3,6 +3,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from src.api.auth import router as auth_router
 from src.core.config import get_settings
 from src.core.errors import register_exception_handlers
 from src.core.telemetry import configure_telemetry
@@ -22,8 +23,9 @@ def create_app() -> FastAPI:
     register_exception_handlers(app)
     configure_telemetry(app, get_settings().applicationinsights_connection_string)
 
-    # Routers are registered incrementally per user story:
-    #   User Story 1: auth router
+    app.include_router(auth_router)
+
+    # Remaining routers are registered incrementally per user story:
     #   User Story 2: documents, queries routers
     #   User Story 3: extends the queries router
     #   User Story 4: admin_eval router

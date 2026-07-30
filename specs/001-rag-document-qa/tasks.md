@@ -97,21 +97,21 @@ succeed and an incorrect password is rejected.
 
 > Write these tests FIRST; confirm they FAIL before implementation.
 
-- [ ] T024 [P] [US1] Contract test `POST /auth/register` (success, duplicate email/username → 409, malformed input → 422) in `backend/tests/contract/test_auth_register.py`
-- [ ] T025 [P] [US1] Contract test `POST /auth/login` (success via email, success via username, wrong password / unrecognized identifier → single generic 401) in `backend/tests/contract/test_auth_login.py`
-- [ ] T026 [P] [US1] Integration test: register → log out → log in with email → log in with username in `backend/tests/integration/test_auth_flow.py`
-- [ ] T027 [P] [US1] Unit tests for bcrypt hashing and minimum password-length validation in `backend/tests/unit/test_auth_service.py`
+- [X] T024 [P] [US1] Contract test `POST /auth/register` (success, duplicate email/username → 409, malformed input → 422) in `backend/tests/contract/test_auth_register.py`
+- [X] T025 [P] [US1] Contract test `POST /auth/login` (success via email, success via username, wrong password / unrecognized identifier → single generic 401) in `backend/tests/contract/test_auth_login.py`
+- [X] T026 [P] [US1] Integration test: register → log out → log in with email → log in with username in `backend/tests/integration/test_auth_flow.py`
+- [X] T027 [P] [US1] Unit tests for bcrypt hashing and minimum password-length validation in `backend/tests/unit/test_auth_service.py`
 
 ### Implementation for User Story 1
 
-- [ ] T028 [P] [US1] Add `RegisterRequest`, `LoginRequest`, `AuthToken` Pydantic schemas in `backend/src/models/schemas.py`
-- [ ] T029 [US1] Implement `backend/src/services/auth_service.py`: `register_user` (bcrypt hash, DB unique-constraint conflict → 409) and `authenticate_user` (email-or-username lookup, single generic 401 on any mismatch) (depends on T016, T020, T028)
-- [ ] T030 [US1] Implement `POST /auth/register` and `POST /auth/login` routes in `backend/src/api/auth.py` (depends on T029)
-- [ ] T031 [US1] Register the auth router in `backend/src/main.py` (depends on T022, T030)
-- [ ] T032 [P] [US1] Implement `RegisterForm` component in `frontend/src/components/RegisterForm.tsx`
-- [ ] T033 [P] [US1] Implement `LoginForm` component in `frontend/src/components/LoginForm.tsx`
-- [ ] T034 [US1] Implement the auth API client and auth context (stores the JWT, attaches it as an Authorization header) in `frontend/src/services/auth.ts`
-- [ ] T035 [US1] Implement `Register` and `Login` pages wired to the components/context above in `frontend/src/pages/Register.tsx` and `frontend/src/pages/Login.tsx` (depends on T032, T033, T034)
+- [X] T028 [P] [US1] Add `RegisterRequest`, `LoginRequest`, `AuthToken` Pydantic schemas in `backend/src/models/schemas.py`
+- [X] T029 [US1] Implement `backend/src/services/auth_service.py`: `register_user` (bcrypt hash, DB unique-constraint conflict → 409) and `authenticate_user` (email-or-username lookup, single generic 401 on any mismatch) (depends on T016, T020, T028)
+- [X] T030 [US1] Implement `POST /auth/register` and `POST /auth/login` routes in `backend/src/api/auth.py` (depends on T029)
+- [X] T031 [US1] Register the auth router in `backend/src/main.py` (depends on T022, T030)
+- [X] T032 [P] [US1] Implement `RegisterForm` component in `frontend/src/components/RegisterForm.tsx`
+- [X] T033 [P] [US1] Implement `LoginForm` component in `frontend/src/components/LoginForm.tsx`
+- [X] T034 [US1] Implement the auth API client and auth context (stores the JWT, attaches it as an Authorization header) in `frontend/src/services/auth.ts`
+- [X] T035 [US1] Implement `Register` and `Login` pages wired to the components/context above in `frontend/src/pages/Register.tsx` and `frontend/src/pages/Login.tsx` (depends on T032, T033, T034)
 
 **Checkpoint**: User Story 1 is independently functional and testable.
 

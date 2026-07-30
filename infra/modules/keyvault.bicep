@@ -24,8 +24,10 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
 
 // Generated at provision time so no human ever has to invent or transcribe a JWT
 // signing secret; resolved at runtime via DefaultAzureCredential (constitution
-// Principle II) rather than ever being written to a config file.
-var generatedJwtSecret = uniqueString(subscription().subscriptionId, resourceGroup().id, keyVaultName, deployment().name)
+// Principle II) rather than ever being written to a config file. Concatenated from
+// three independent uniqueString()/guid() values (13 + 13 + 36 chars) so the result
+// comfortably exceeds the 32-byte minimum RFC 7518 recommends for an HS256 key.
+var generatedJwtSecret = '${uniqueString(subscription().subscriptionId, resourceGroup().id, keyVaultName, deployment().name)}${uniqueString(deployment().name, keyVaultName, 'salt2')}${guid(subscription().subscriptionId, resourceGroup().id, keyVaultName)}'
 
 resource jwtSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
   parent: keyVault

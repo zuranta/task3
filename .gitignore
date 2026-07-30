@@ -17,6 +17,7 @@ frontend/dist/
 frontend/build/
 *.log
 npm-debug.log*
+*.tsbuildinfo
 
 # Secrets / environment
 .env
