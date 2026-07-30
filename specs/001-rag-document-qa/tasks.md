@@ -180,8 +180,8 @@ revisiting it returns the identical structured answer and citations.
 
 ### Implementation for User Story 3
 
-- [ ] T066 [US3] Add `list_queries`/`get_query` functions (user-scoped, most-recent-first, explicit empty-state) to `backend/src/services/query_service.py` (depends on T055)
-- [ ] T067 [US3] Implement `GET /queries` and `GET /queries/{id}` routes in `backend/src/api/queries.py` (depends on T066)
+- [X] T066 [US3] Add `list_queries`/`get_query` functions (user-scoped, most-recent-first, explicit empty-state) to `backend/src/services/query_service.py` (depends on T055)
+- [X] T067 [US3] Implement `GET /queries` and `GET /queries/{id}` routes in `backend/src/api/queries.py` (depends on T066)
 - [ ] T068 [P] [US3] Implement `HistoryList` component in `frontend/src/components/HistoryList.tsx`
 - [ ] T069 [US3] Implement the `History` page wired to `GET /queries` and `GET /queries/{id}` in `frontend/src/pages/History.tsx` (depends on T068)
 
