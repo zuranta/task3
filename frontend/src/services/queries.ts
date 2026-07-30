@@ -51,3 +51,19 @@ export async function askQuestion(question: string): Promise<QueryRecord> {
   }
   return response.json();
 }
+
+export async function listQueryHistory(): Promise<QueryRecord[]> {
+  const response = await fetch(`${API_BASE}/queries`, { headers: authHeaders() });
+  if (!response.ok) {
+    throw new ApiError(await parseErrorDetail(response), response.status);
+  }
+  return response.json();
+}
+
+export async function getQuery(queryId: string): Promise<QueryRecord> {
+  const response = await fetch(`${API_BASE}/queries/${queryId}`, { headers: authHeaders() });
+  if (!response.ok) {
+    throw new ApiError(await parseErrorDetail(response), response.status);
+  }
+  return response.json();
+}

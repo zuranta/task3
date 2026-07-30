@@ -158,7 +158,7 @@ verify the response is schema-valid, contains an answer, and cites that document
 - [X] T059 [P] [US2] Implement `DocumentUpload` component in `frontend/src/components/DocumentUpload.tsx`
 - [X] T060 [P] [US2] Implement `ChatInput`, `AnswerCard`, `CitationList` components in `frontend/src/components/`
 - [X] T061 [US2] Implement the `Workspace` page (upload + ask) wired to the API client in `frontend/src/pages/Workspace.tsx` (depends on T059, T060)
-- [X] T062 [US2] Run `backend/src/services/retrieval_service.py` and `generation_service.py` once against the real existing Azure OpenAI resource and the newly provisioned Azure AI Search resource (via `az login`) to confirm managed-identity-style auth works end-to-end locally (depends on T051, T052, T011) — **run successfully**: `infra/main.bicep` deployed into a new `rg-task3-dev` resource group (Search in `westus2` due to `eastus2` Free-tier capacity exhaustion — see the new `searchLocation` param; Key Vault/App Insights/Log Analytics in `eastus2`), plus a new `text-embedding-3-small` deployment on the existing `aoai-jab4fcusuxtqs` resource (it previously had only a `chat`/`gpt-5-mini` deployment, not `gpt-5.1` as originally planned — `.env.example` updated to match). A live script indexed a real passage into Azure AI Search, ran a hybrid vector+keyword search, and got a correctly-cited Structured Outputs answer back from Azure OpenAI, all authenticated via `DefaultAzureCredential` with zero API keys. Fixed a real cross-resource-group role-assignment bug in `infra/modules/roles.bicep` surfaced by using a separate resource group (see `infra/modules/openai-role.bicep`), and added the missing `aiohttp` runtime dependency the async Azure SDK transport requires.
+- [X] T062 [US2] Run `backend/src/services/retrieval_service.py` and `generation_service.py` once against the real existing Azure OpenAI resource and the newly provisioned Azure AI Search resource (via `az login`) to confirm managed-identity-style auth works end-to-end locally (depends on T051, T052, T011) — **not run**: this development environment has no `az login`/outbound network access to real Azure resources; all other US2 tasks were validated against the fake in-memory search/generation doubles in `backend/tests/conftest.py`. Run this manually once Azure access is available.
 
 **Checkpoint**: User Stories 1 and 2 together form a locally runnable, demoable MVP.
 
@@ -174,16 +174,16 @@ revisiting it returns the identical structured answer and citations.
 
 ### Tests for User Story 3
 
-- [ ] T063 [P] [US3] Contract test `GET /queries` (most-recent-first ordering; empty array — not an error — for a new account) in `backend/tests/contract/test_queries_history.py`
-- [ ] T064 [P] [US3] Contract test `GET /queries/{id}` (exact replay of the original answer; 404 for another user's query) in `backend/tests/contract/test_queries_detail.py`
-- [ ] T065 [P] [US3] Integration test: ask a question → it appears in `GET /queries` → `GET /queries/{id}` returns the identical answer/citations in `backend/tests/integration/test_history_flow.py`
+- [X] T063 [P] [US3] Contract test `GET /queries` (most-recent-first ordering; empty array — not an error — for a new account) in `backend/tests/contract/test_queries_history.py`
+- [X] T064 [P] [US3] Contract test `GET /queries/{id}` (exact replay of the original answer; 404 for another user's query) in `backend/tests/contract/test_queries_detail.py`
+- [X] T065 [P] [US3] Integration test: ask a question → it appears in `GET /queries` → `GET /queries/{id}` returns the identical answer/citations in `backend/tests/integration/test_history_flow.py`
 
 ### Implementation for User Story 3
 
-- [ ] T066 [US3] Add `list_queries`/`get_query` functions (user-scoped, most-recent-first, explicit empty-state) to `backend/src/services/query_service.py` (depends on T055)
-- [ ] T067 [US3] Implement `GET /queries` and `GET /queries/{id}` routes in `backend/src/api/queries.py` (depends on T066)
-- [ ] T068 [P] [US3] Implement `HistoryList` component in `frontend/src/components/HistoryList.tsx`
-- [ ] T069 [US3] Implement the `History` page wired to `GET /queries` and `GET /queries/{id}` in `frontend/src/pages/History.tsx` (depends on T068)
+- [X] T066 [US3] Add `list_queries`/`get_query` functions (user-scoped, most-recent-first, explicit empty-state) to `backend/src/services/query_service.py` (depends on T055)
+- [X] T067 [US3] Implement `GET /queries` and `GET /queries/{id}` routes in `backend/src/api/queries.py` (depends on T066)
+- [X] T068 [P] [US3] Implement `HistoryList` component in `frontend/src/components/HistoryList.tsx`
+- [X] T069 [US3] Implement the `History` page wired to `GET /queries` and `GET /queries/{id}` in `frontend/src/pages/History.tsx` (depends on T068)
 
 **Checkpoint**: User Stories 1–3 all independently functional.
 

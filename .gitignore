@@ -34,3 +34,6 @@ npm-debug.log*
 .DS_Store
 Thumbs.db
 *.swp
+
+# Local developer convenience (machine-specific `make` availability, paths)
+/Makefile

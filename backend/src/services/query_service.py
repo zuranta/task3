@@ -12,7 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from src.core.config import get_settings
-from src.core.errors import AppError
+from src.core.errors import AppError, NotFoundError
 from src.models import schemas
 from src.models.db import (
     Answer,
@@ -147,3 +147,27 @@ async def build_query_record(db: AsyncSession, query: Query) -> schemas.QueryRec
         answer=answer_schema,
         created_at=query.created_at,
     )
+
+
+async def list_queries(
+    db: AsyncSession, *, user_id: str, limit: int = 20, offset: int = 0
+) -> list[Query]:
+    """Caller's own past queries, most-recent-first (FR-019). An empty list for
+    an account with no history is a normal result, not an error."""
+    result = await db.execute(
+        select(Query)
+        .where(Query.user_id == user_id)
+        .order_by(Query.created_at.desc())
+        .limit(limit)
+        .offset(offset)
+    )
+    return list(result.scalars().all())
+
+
+async def get_query(db: AsyncSession, *, user_id: str, query_id: str) -> Query:
+    """One of the caller's own past queries, exactly as originally answered (FR-020)."""
+    result = await db.execute(select(Query).where(Query.id == query_id, Query.user_id == user_id))
+    query = result.scalar_one_or_none()
+    if query is None:
+        raise NotFoundError("Query not found.")
+    return query

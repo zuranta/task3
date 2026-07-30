@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 
+import { History } from "./pages/History";
 import { Login } from "./pages/Login";
 import { Register } from "./pages/Register";
 import { Workspace } from "./pages/Workspace";
@@ -39,6 +40,14 @@ export function App() {
         element={
           <ProtectedRoute>
             <Workspace />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/history"
+        element={
+          <ProtectedRoute>
+            <History />
           </ProtectedRoute>
         }
       />
