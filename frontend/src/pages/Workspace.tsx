@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
 import { AnswerCard } from "../components/AnswerCard";
 import { ChatInput } from "../components/ChatInput";
@@ -51,6 +52,7 @@ export function Workspace() {
   return (
     <main>
       <h1>Workspace</h1>
+      <Link to="/history">View history</Link>
       <button type="button" onClick={logout}>
         Log out
       </button>
