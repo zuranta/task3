@@ -21,6 +21,8 @@ dependencies = [
     "langsmith>=0.1.137",
     "azure-monitor-opentelemetry>=1.6.1",
     "python-multipart>=0.0.12",
+    "pypdf>=5.0.0",
+    "python-docx>=1.1.2",
 ]
 
 [project.optional-dependencies]

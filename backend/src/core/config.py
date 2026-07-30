@@ -18,6 +18,8 @@ class Settings(BaseSettings):
 
     azure_openai_endpoint: str
     azure_openai_deployment: str = "gpt-5.1"
+    azure_openai_embedding_deployment: str = "text-embedding-3-small"
+    azure_openai_model_context_window: int = 128_000
     azure_search_endpoint: str
     azure_search_index_name: str = "rag-documents"
     key_vault_uri: str
@@ -31,6 +33,7 @@ class Settings(BaseSettings):
     upload_rate_limit_per_day: int = 50
     question_rate_limit_per_day: int = 200
     max_upload_size_bytes: int = 10 * 1024 * 1024
+    retrieval_top_k: int = 5
 
 
 class Secrets:

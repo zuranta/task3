@@ -129,36 +129,36 @@ verify the response is schema-valid, contains an answer, and cites that document
 
 ### Tests for User Story 2
 
-- [ ] T036 [P] [US2] Contract test `POST /documents` (accepted; empty/corrupted/password-protected/oversized(>10MB)/unsupported-format → 400; over rate limit → 429) in `backend/tests/contract/test_documents_upload.py`
-- [ ] T037 [P] [US2] Contract test `GET /documents` and `DELETE /documents/{id}` (list own only, 404 for others' documents) in `backend/tests/contract/test_documents_manage.py`
-- [ ] T038 [P] [US2] Contract test `POST /queries` (answered with citations; no_answer_found; empty question → 422; over rate limit → 429) in `backend/tests/contract/test_queries_ask.py`
-- [ ] T039 [P] [US2] Contract test `POST /queries` retrieval/generation failure → structured `502` with a non-leaking message (matches the `502` response documented in contracts/openapi.yaml) in `backend/tests/contract/test_queries_failure.py` — addresses `/speckit-analyze` finding E1
-- [ ] T040 [P] [US2] Integration test: upload → ask → structured, cited answer (happy path) in `backend/tests/integration/test_ask_grounded.py`
-- [ ] T041 [P] [US2] Integration test: no documents uploaded yet, and question with no answer in the corpus → explicit no_answer_found in `backend/tests/integration/test_ask_no_answer.py`
-- [ ] T042 [P] [US2] Integration test: delete a cited document → citation retained in history marked `source_removed: true`, document no longer retrievable in `backend/tests/integration/test_document_delete.py`
-- [ ] T043 [P] [US2] Integration test: per-user upload and question rate limits (429 with limit/reset info) in `backend/tests/integration/test_rate_limit.py`
-- [ ] T044 [P] [US2] Unit tests for document validation (empty/corrupted/password-protected/oversized/unsupported format) in `backend/tests/unit/test_document_service.py`
-- [ ] T045 [P] [US2] Unit tests asserting the retrieval query always includes the mandatory `user_id` + `status=active` filter (never omitted, never client-overridable) in `backend/tests/unit/test_retrieval_service.py`
-- [ ] T046 [P] [US2] Unit tests asserting every `document_service`/`query_service` read and write function requires and applies the authenticated `user_id` (list/get/delete document, list/get query) — mirrors T045's pattern for the SQLite-backed side of FR-006/SC-007 in `backend/tests/unit/test_data_isolation.py` — addresses `/speckit-analyze` finding E2
-- [ ] T047 [P] [US2] Unit tests asserting an `Answer` cannot be persisted with `groundedness_status=grounded` and zero citations (must be rejected or downgraded to `no_answer_found`) in `backend/tests/unit/test_answer_guard.py` — addresses `/speckit-analyze` finding U2
+- [X] T036 [P] [US2] Contract test `POST /documents` (accepted; empty/corrupted/password-protected/oversized(>10MB)/unsupported-format → 400; over rate limit → 429) in `backend/tests/contract/test_documents_upload.py`
+- [X] T037 [P] [US2] Contract test `GET /documents` and `DELETE /documents/{id}` (list own only, 404 for others' documents) in `backend/tests/contract/test_documents_manage.py`
+- [X] T038 [P] [US2] Contract test `POST /queries` (answered with citations; no_answer_found; empty question → 422; over rate limit → 429) in `backend/tests/contract/test_queries_ask.py`
+- [X] T039 [P] [US2] Contract test `POST /queries` retrieval/generation failure → structured `502` with a non-leaking message (matches the `502` response documented in contracts/openapi.yaml) in `backend/tests/contract/test_queries_failure.py` — addresses `/speckit-analyze` finding E1
+- [X] T040 [P] [US2] Integration test: upload → ask → structured, cited answer (happy path) in `backend/tests/integration/test_ask_grounded.py`
+- [X] T041 [P] [US2] Integration test: no documents uploaded yet, and question with no answer in the corpus → explicit no_answer_found in `backend/tests/integration/test_ask_no_answer.py`
+- [X] T042 [P] [US2] Integration test: delete a cited document → citation retained in history marked `source_removed: true`, document no longer retrievable in `backend/tests/integration/test_document_delete.py`
+- [X] T043 [P] [US2] Integration test: per-user upload and question rate limits (429 with limit/reset info) in `backend/tests/integration/test_rate_limit.py`
+- [X] T044 [P] [US2] Unit tests for document validation (empty/corrupted/password-protected/oversized/unsupported format) in `backend/tests/unit/test_document_service.py`
+- [X] T045 [P] [US2] Unit tests asserting the retrieval query always includes the mandatory `user_id` + `status=active` filter (never omitted, never client-overridable) in `backend/tests/unit/test_retrieval_service.py`
+- [X] T046 [P] [US2] Unit tests asserting every `document_service`/`query_service` read and write function requires and applies the authenticated `user_id` (list/get/delete document, list/get query) — mirrors T045's pattern for the SQLite-backed side of FR-006/SC-007 in `backend/tests/unit/test_data_isolation.py` — addresses `/speckit-analyze` finding E2
+- [X] T047 [P] [US2] Unit tests asserting an `Answer` cannot be persisted with `groundedness_status=grounded` and zero citations (must be rejected or downgraded to `no_answer_found`) in `backend/tests/unit/test_answer_guard.py` — addresses `/speckit-analyze` finding U2
 
 ### Implementation for User Story 2
 
-- [ ] T048 [P] [US2] Define `Document`, `Query`, `Answer`, `Citation`, `RateLimitCounter` ORM models in `backend/src/models/db.py`
-- [ ] T049 [US2] Generate and apply the Alembic migration for `documents`/`queries`/`answers`/`citations`/`rate_limit_counters` tables in `backend/alembic/versions/` (depends on T048)
-- [ ] T050 [P] [US2] Add `Document`, `QueryRequest`, `QueryRecord`, `Citation`, `ResponseMetadata`, and the Structured-Outputs-bound `Answer` Pydantic schemas in `backend/src/models/schemas.py`
-- [ ] T051 [US2] Implement `backend/src/services/retrieval_service.py`: ensure the Azure AI Search index exists, hybrid (vector+keyword) query with the mandatory server-injected `user_id`+`status` filter, passage upsert on ingest and removal on delete, wrapping search-service failures as a classified retrieval error (feeds T039) (depends on T021)
-- [ ] T052 [US2] Implement `backend/src/services/generation_service.py`: Azure OpenAI Structured Outputs call against the existing `aoai-jab4fcusuxtqs` deployment producing the `Answer`/`Citation`/`ResponseMetadata` shape, computing `context_window_utilization`, wrapping generation-service failures as a classified generation error (feeds T039) (depends on T050, T021)
-- [ ] T053 [US2] Implement `backend/src/services/document_service.py`: format/size(10MB)/corruption/password-protection validation, parse+chunk, delegate to `retrieval_service` for indexing/deletion, status transitions (`processing→ready|failed`, `ready→deleted`), all reads/writes scoped by `user_id` (depends on T048, T051)
-- [ ] T054 [US2] Implement `backend/src/services/rate_limit_service.py`: rolling-24h check-and-increment for uploads (50/day) and questions (200/day) (depends on T048)
-- [ ] T055 [US2] Implement `backend/src/services/query_service.py`: `ask_question` orchestrating rate-limit check → retrieval → generation → the zero-citation groundedness guard (T047) → persistence, all scoped by `user_id` (depends on T051, T052, T054)
-- [ ] T056 [US2] Implement `POST /documents`, `GET /documents`, `DELETE /documents/{id}` routes in `backend/src/api/documents.py` (depends on T053, T054)
-- [ ] T057 [US2] Implement `POST /queries` route calling `query_service.ask_question`, mapping retrieval/generation failures to the `502` contract response, in `backend/src/api/queries.py` (depends on T055)
-- [ ] T058 [US2] Register the documents and queries routers in `backend/src/main.py` (depends on T022, T056, T057)
-- [ ] T059 [P] [US2] Implement `DocumentUpload` component in `frontend/src/components/DocumentUpload.tsx`
-- [ ] T060 [P] [US2] Implement `ChatInput`, `AnswerCard`, `CitationList` components in `frontend/src/components/`
-- [ ] T061 [US2] Implement the `Workspace` page (upload + ask) wired to the API client in `frontend/src/pages/Workspace.tsx` (depends on T059, T060)
-- [ ] T062 [US2] Run `backend/src/services/retrieval_service.py` and `generation_service.py` once against the real existing Azure OpenAI resource and the newly provisioned Azure AI Search resource (via `az login`) to confirm managed-identity-style auth works end-to-end locally (depends on T051, T052, T011)
+- [X] T048 [P] [US2] Define `Document`, `Query`, `Answer`, `Citation`, `RateLimitCounter` ORM models in `backend/src/models/db.py`
+- [X] T049 [US2] Generate and apply the Alembic migration for `documents`/`queries`/`answers`/`citations`/`rate_limit_counters` tables in `backend/alembic/versions/` (depends on T048)
+- [X] T050 [P] [US2] Add `Document`, `QueryRequest`, `QueryRecord`, `Citation`, `ResponseMetadata`, and the Structured-Outputs-bound `Answer` Pydantic schemas in `backend/src/models/schemas.py`
+- [X] T051 [US2] Implement `backend/src/services/retrieval_service.py`: ensure the Azure AI Search index exists, hybrid (vector+keyword) query with the mandatory server-injected `user_id`+`status` filter, passage upsert on ingest and removal on delete, wrapping search-service failures as a classified retrieval error (feeds T039) (depends on T021)
+- [X] T052 [US2] Implement `backend/src/services/generation_service.py`: Azure OpenAI Structured Outputs call against the existing `aoai-jab4fcusuxtqs` deployment producing the `Answer`/`Citation`/`ResponseMetadata` shape, computing `context_window_utilization`, wrapping generation-service failures as a classified generation error (feeds T039) (depends on T050, T021)
+- [X] T053 [US2] Implement `backend/src/services/document_service.py`: format/size(10MB)/corruption/password-protection validation, parse+chunk, delegate to `retrieval_service` for indexing/deletion, status transitions (`processing→ready|failed`, `ready→deleted`), all reads/writes scoped by `user_id` (depends on T048, T051)
+- [X] T054 [US2] Implement `backend/src/services/rate_limit_service.py`: rolling-24h check-and-increment for uploads (50/day) and questions (200/day) (depends on T048)
+- [X] T055 [US2] Implement `backend/src/services/query_service.py`: `ask_question` orchestrating rate-limit check → retrieval → generation → the zero-citation groundedness guard (T047) → persistence, all scoped by `user_id` (depends on T051, T052, T054)
+- [X] T056 [US2] Implement `POST /documents`, `GET /documents`, `DELETE /documents/{id}` routes in `backend/src/api/documents.py` (depends on T053, T054)
+- [X] T057 [US2] Implement `POST /queries` route calling `query_service.ask_question`, mapping retrieval/generation failures to the `502` contract response, in `backend/src/api/queries.py` (depends on T055)
+- [X] T058 [US2] Register the documents and queries routers in `backend/src/main.py` (depends on T022, T056, T057)
+- [X] T059 [P] [US2] Implement `DocumentUpload` component in `frontend/src/components/DocumentUpload.tsx`
+- [X] T060 [P] [US2] Implement `ChatInput`, `AnswerCard`, `CitationList` components in `frontend/src/components/`
+- [X] T061 [US2] Implement the `Workspace` page (upload + ask) wired to the API client in `frontend/src/pages/Workspace.tsx` (depends on T059, T060)
+- [ ] T062 [US2] Run `backend/src/services/retrieval_service.py` and `generation_service.py` once against the real existing Azure OpenAI resource and the newly provisioned Azure AI Search resource (via `az login`) to confirm managed-identity-style auth works end-to-end locally (depends on T051, T052, T011) — **not run**: this development environment has no `az login`/outbound network access to real Azure resources; all other US2 tasks were validated against the fake in-memory search/generation doubles in `backend/tests/conftest.py`. Run this manually once Azure access is available.
 
 **Checkpoint**: User Stories 1 and 2 together form a locally runnable, demoable MVP.
 
