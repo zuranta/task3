@@ -32,6 +32,15 @@ class ValidationAppError(AppError):
     default_detail = "The request could not be validated."
 
 
+class BadRequestError(AppError):
+    """The request is well-formed but its content is unacceptable (e.g. an
+    empty, corrupted, password-protected, oversized, or unsupported-format
+    file upload) -- distinct from ValidationAppError's 422 schema failures."""
+
+    status_code = 400
+    default_detail = "The request could not be processed."
+
+
 class UnauthorizedError(AppError):
     status_code = 401
     default_detail = "Invalid credentials."
