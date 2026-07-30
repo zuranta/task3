@@ -71,8 +71,24 @@ export function authHeaders(): Record<string, string> {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
+function decodeRole(token: string): string | null {
+  try {
+    const payload = token.split(".")[1];
+    const decoded = JSON.parse(atob(payload.replace(/-/g, "+").replace(/_/g, "/")));
+    return decoded.role ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export function getRole(): string | null {
+  const token = getToken();
+  return token ? decodeRole(token) : null;
+}
+
 export interface AuthContextValue {
   isAuthenticated: boolean;
+  isAdmin: boolean;
   login: (identifier: string, password: string) => Promise<void>;
   register: (email: string, username: string, password: string) => Promise<void>;
   logout: () => void;

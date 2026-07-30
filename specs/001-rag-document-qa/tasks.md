@@ -221,8 +221,8 @@ per-question and aggregate scored comparison identifying the better-performing v
 - [X] T085 [US4] Implement `backend/src/services/eval_service.py` orchestrating dataset-item CRUD and triggering `run_experiment`, persisting `ComparisonRun` summaries (depends on T076, T084)
 - [X] T086 [US4] Implement `/admin/eval/dataset-items` and `/admin/eval/comparison-runs` routes, gated by `require_admin`, in `backend/src/api/admin_eval.py` (depends on T085, T020)
 - [X] T087 [US4] Register the admin_eval router in `backend/src/main.py` (depends on T022, T086)
-- [ ] T088 [P] [US4] Implement `AdminDashboard` / comparison-run view components in `frontend/src/components/AdminDashboard.tsx`
-- [ ] T089 [US4] Implement the `AdminEval` page wired to the admin eval endpoints in `frontend/src/pages/AdminEval.tsx` (depends on T088)
+- [X] T088 [P] [US4] Implement `AdminDashboard` / comparison-run view components in `frontend/src/components/AdminDashboard.tsx`
+- [X] T089 [US4] Implement the `AdminEval` page wired to the admin eval endpoints in `frontend/src/pages/AdminEval.tsx` (depends on T088)
 
 **Checkpoint**: User Stories 1–4 all independently functional.
 
