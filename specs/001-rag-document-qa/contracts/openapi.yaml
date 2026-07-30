@@ -1,0 +1,480 @@
+openapi: 3.0.3
+info:
+  title: RAG Document Q&A Application API
+  version: "1.0.0"
+  description: >
+    Contract for the multi-user RAG document Q&A backend (see spec.md for the
+    functional requirements each endpoint satisfies). All endpoints except
+    /auth/register and /auth/login require a Bearer JWT; /admin/* endpoints
+    additionally require the `admin` role (FR-007).
+servers:
+  - url: /api/v1
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Error:
+      type: object
+      required: [detail]
+      properties:
+        detail:
+          type: string
+          description: >
+            Clear, user-facing, non-leaking error message. Never contains stack
+            traces, credentials, infrastructure hostnames, or raw third-party
+            error payloads (FR-021).
+
+    RegisterRequest:
+      type: object
+      required: [email, username, password]
+      properties:
+        email: { type: string, format: email }
+        username: { type: string, minLength: 3, maxLength: 32 }
+        password: { type: string, minLength: 8, format: password }
+
+    LoginRequest:
+      type: object
+      required: [identifier, password]
+      properties:
+        identifier:
+          type: string
+          description: Either the account's email or its username (FR-002).
+        password: { type: string, format: password }
+
+    AuthToken:
+      type: object
+      required: [access_token, token_type]
+      properties:
+        access_token: { type: string }
+        token_type: { type: string, enum: [bearer] }
+
+    Document:
+      type: object
+      required: [id, original_filename, format, status, uploaded_at]
+      properties:
+        id: { type: string }
+        original_filename: { type: string }
+        format: { type: string, enum: [pdf, docx, txt, md] }
+        status: { type: string, enum: [processing, ready, failed, deleted] }
+        failure_reason: { type: string, nullable: true }
+        uploaded_at: { type: string, format: date-time }
+
+    Citation:
+      type: object
+      required: [document_id, document_filename, location_label, source_removed]
+      properties:
+        document_id: { type: string }
+        document_filename: { type: string }
+        location_label:
+          type: string
+          description: e.g., page/section/passage locator within the source document.
+        source_removed:
+          type: boolean
+          description: True if the cited document has since been deleted (FR-010).
+
+    ResponseMetadata:
+      type: object
+      required: [prompt_tokens, completion_tokens, total_tokens, context_window_utilization]
+      properties:
+        prompt_tokens: { type: integer }
+        completion_tokens: { type: integer }
+        total_tokens: { type: integer }
+        context_window_utilization:
+          type: number
+          format: float
+          description: total_tokens / model context window, range 0-1.
+
+    Answer:
+      type: object
+      required: [status, citations, metadata]
+      properties:
+        status:
+          type: string
+          enum: [answered, no_answer_found]
+          description: Explicit no-answer-found signal instead of a fabricated answer (FR-017).
+        answer_text: { type: string, nullable: true }
+        citations:
+          type: array
+          items: { $ref: "#/components/schemas/Citation" }
+        metadata:
+          $ref: "#/components/schemas/ResponseMetadata"
+
+    QueryRequest:
+      type: object
+      required: [question]
+      properties:
+        question: { type: string, minLength: 1 }
+
+    QueryRecord:
+      type: object
+      required: [id, question, status, created_at]
+      properties:
+        id: { type: string }
+        question: { type: string }
+        status: { type: string, enum: [answered, no_answer_found, failed] }
+        answer:
+          $ref: "#/components/schemas/Answer"
+        created_at: { type: string, format: date-time }
+
+    DatasetItem:
+      type: object
+      required: [question, expected_answer]
+      properties:
+        question: { type: string }
+        expected_answer: { type: string }
+        expected_source_reference: { type: string, nullable: true }
+
+    ComparisonRunRequest:
+      type: object
+      required: [version_a_label, version_b_label]
+      properties:
+        version_a_label: { type: string }
+        version_b_label: { type: string }
+
+    ComparisonRun:
+      type: object
+      required: [id, version_a_label, version_b_label, status, started_at]
+      properties:
+        id: { type: string }
+        version_a_label: { type: string }
+        version_b_label: { type: string }
+        status: { type: string, enum: [running, completed, partial] }
+        aggregate_score_a:
+          type: object
+          properties:
+            correctness: { type: number }
+            relevance: { type: number }
+            groundedness: { type: number }
+        aggregate_score_b:
+          type: object
+          properties:
+            correctness: { type: number }
+            relevance: { type: number }
+            groundedness: { type: number }
+        winner: { type: string, enum: [a, b, tie], nullable: true }
+        started_at: { type: string, format: date-time }
+        completed_at: { type: string, format: date-time, nullable: true }
+
+    OperationalMetrics:
+      type: object
+      properties:
+        window_minutes: { type: integer }
+        by_stage:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              request_count: { type: integer }
+              error_count: { type: integer }
+              error_rate: { type: number }
+              p50_latency_ms: { type: number }
+              p95_latency_ms: { type: number }
+              total_tokens: { type: integer }
+
+paths:
+  /auth/register:
+    post:
+      summary: Register a new account (FR-001, FR-003, FR-005)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/RegisterRequest" }
+      responses:
+        "201":
+          description: Account created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AuthToken" }
+        "409":
+          description: Email or username already in use
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "422":
+          description: Malformed request (e.g., invalid email, password too short)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  /auth/login:
+    post:
+      summary: Log in with email-or-username plus password (FR-002, FR-004)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/LoginRequest" }
+      responses:
+        "200":
+          description: Authenticated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AuthToken" }
+        "401":
+          description: >
+            Generic invalid-credentials error; does not reveal whether the
+            identifier or the password was incorrect (FR-004).
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  /documents:
+    post:
+      summary: Upload a document (FR-008, FR-009)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file: { type: string, format: binary }
+      responses:
+        "202":
+          description: Accepted for processing
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Document" }
+        "400":
+          description: Empty, corrupted, password-protected, or unsupported format
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "401": { description: Missing/invalid token }
+        "429":
+          description: Upload rate limit exceeded (FR-012)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+    get:
+      summary: List the authenticated user's own documents
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: Documents owned by the caller
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Document" }
+
+  /documents/{documentId}:
+    delete:
+      summary: Delete a document the caller previously uploaded (FR-010)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: documentId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "204": { description: Deleted; excluded from future retrieval, history retained }
+        "404":
+          description: >
+            Not found or not owned by the caller (indistinguishable, per the
+            cross-account edge case in spec.md).
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  /queries:
+    post:
+      summary: Ask a question over the caller's own documents (FR-011, FR-013-FR-017)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/QueryRequest" }
+      responses:
+        "200":
+          description: Structured, cited answer (or explicit no-answer-found)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/QueryRecord" }
+        "401": { description: Missing/invalid token }
+        "422":
+          description: Empty/malformed question
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "429":
+          description: Question rate limit exceeded (FR-012)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "502":
+          description: Retrieval or generation failure (FR-021), non-leaking message
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+    get:
+      summary: Browse the caller's own query history, most-recent-first (FR-019)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: limit
+          in: query
+          schema: { type: integer, default: 20 }
+        - name: offset
+          in: query
+          schema: { type: integer, default: 0 }
+      responses:
+        "200":
+          description: >
+            Caller's past queries (empty array, not an error, when there is no
+            history).
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/QueryRecord" }
+
+  /queries/{queryId}:
+    get:
+      summary: Retrieve one past query exactly as originally answered (FR-020)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: queryId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: The original structured answer, unchanged
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/QueryRecord" }
+        "404":
+          description: Not found or not owned by the caller
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  /admin/eval/dataset-items:
+    post:
+      summary: Add a benchmark question/expected-answer pair (FR-023, admin/evaluator only)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/DatasetItem" }
+      responses:
+        "201":
+          description: Added to the LangSmith evaluation dataset
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DatasetItem" }
+        "403":
+          description: Caller is not an admin/evaluator (FR-007)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+    get:
+      summary: List benchmark dataset items (admin/evaluator only)
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/DatasetItem" }
+        "403":
+          description: Caller is not an admin/evaluator
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  /admin/eval/comparison-runs:
+    post:
+      summary: >
+        Run two named system versions against the benchmark dataset and score
+        them (FR-024, FR-025, FR-026, admin/evaluator only)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ComparisonRunRequest" }
+      responses:
+        "202":
+          description: Comparison run started
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ComparisonRun" }
+        "403":
+          description: Caller is not an admin/evaluator
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+    get:
+      summary: List past comparison runs (admin/evaluator only)
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/ComparisonRun" }
+        "403":
+          description: Caller is not an admin/evaluator
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  /admin/eval/comparison-runs/{runId}:
+    get:
+      summary: Get one comparison run's results, including which version won (FR-025)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: runId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ComparisonRun" }
+        "403":
+          description: Caller is not an admin/evaluator
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "404":
+          description: Run not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  /admin/metrics:
+    get:
+      summary: >
+        Operational health for a recent time window, by request stage
+        (FR-027, FR-028, admin/evaluator only)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: window_minutes
+          in: query
+          schema: { type: integer, default: 60 }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/OperationalMetrics" }
+        "403":
+          description: Caller is not an admin/evaluator
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+</content>

@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+backend/dist/
+backend/build/
+*.db
+*.sqlite3
+
+# Node / frontend
+node_modules/
+frontend/dist/
+frontend/build/
+*.log
+npm-debug.log*
+
+# Secrets / environment
+.env
+.env.*
+!.env.example
+
+# Bicep
+*.bicep.json
+.azure/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
