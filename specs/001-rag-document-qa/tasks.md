@@ -68,16 +68,16 @@ error handling, app wiring, telemetry).
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete.
 
-- [ ] T014 Implement async SQLAlchemy engine/session setup in `backend/src/core/db.py`
-- [ ] T015 Initialize Alembic in `backend/alembic/` wired to the SQLAlchemy models metadata
-- [ ] T016 Define the `User` ORM model (id, unique email, unique username, password_hash, role, created_at) in `backend/src/models/db.py`
-- [ ] T017 Generate and apply the initial Alembic migration for the `users` table in `backend/alembic/versions/`
-- [ ] T018 [P] Define the shared `Error` response Pydantic schema in `backend/src/models/schemas.py`
-- [ ] T019 Implement a custom exception hierarchy and FastAPI exception handlers mapping internal failures to non-leaking `Error` responses in `backend/src/core/errors.py`
-- [ ] T020 Implement JWT encode/decode utilities and the `get_current_user` / `require_admin` FastAPI dependencies in `backend/src/core/security.py`
-- [ ] T021 Implement the settings loader in `backend/src/core/config.py`: non-secret settings (existing Azure OpenAI endpoint/deployment, new Azure AI Search endpoint) plus Key Vault secret resolution (JWT signing key, LangSmith API key) via `DefaultAzureCredential`
-- [ ] T022 Create the FastAPI app factory with router-registration skeleton and CORS configured for the local frontend dev server in `backend/src/main.py`
-- [ ] T023 Bootstrap Application Insights/OpenTelemetry auto-instrumentation and a request-stage-tagging middleware (`upload`/`retrieval`/`generation`) in `backend/src/core/telemetry.py`
+- [X] T014 Implement async SQLAlchemy engine/session setup in `backend/src/core/db.py`
+- [X] T015 Initialize Alembic in `backend/alembic/` wired to the SQLAlchemy models metadata
+- [X] T016 Define the `User` ORM model (id, unique email, unique username, password_hash, role, created_at) in `backend/src/models/db.py`
+- [X] T017 Generate and apply the initial Alembic migration for the `users` table in `backend/alembic/versions/`
+- [X] T018 [P] Define the shared `Error` response Pydantic schema in `backend/src/models/schemas.py`
+- [X] T019 Implement a custom exception hierarchy and FastAPI exception handlers mapping internal failures to non-leaking `Error` responses in `backend/src/core/errors.py`
+- [X] T020 Implement JWT encode/decode utilities and the `get_current_user` / `require_admin` FastAPI dependencies in `backend/src/core/security.py`
+- [X] T021 Implement the settings loader in `backend/src/core/config.py`: non-secret settings (existing Azure OpenAI endpoint/deployment, new Azure AI Search endpoint) plus Key Vault secret resolution (JWT signing key, LangSmith API key) via `DefaultAzureCredential`
+- [X] T022 Create the FastAPI app factory with router-registration skeleton and CORS configured for the local frontend dev server in `backend/src/main.py`
+- [X] T023 Bootstrap Application Insights/OpenTelemetry auto-instrumentation and a request-stage-tagging middleware (`upload`/`retrieval`/`generation`) in `backend/src/core/telemetry.py`
 
 **Checkpoint**: Foundation ready — user story implementation can now begin.
 
