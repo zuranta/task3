@@ -32,14 +32,9 @@ export function AdminDashboard({ runs }: { runs: ComparisonRun[] }) {
             <td>
               {scorePair(run.aggregate_score_a?.correctness, run.aggregate_score_b?.correctness)}
             </td>
+            <td>{scorePair(run.aggregate_score_a?.relevance, run.aggregate_score_b?.relevance)}</td>
             <td>
-              {scorePair(run.aggregate_score_a?.relevance, run.aggregate_score_b?.relevance)}
-            </td>
-            <td>
-              {scorePair(
-                run.aggregate_score_a?.groundedness,
-                run.aggregate_score_b?.groundedness,
-              )}
+              {scorePair(run.aggregate_score_a?.groundedness, run.aggregate_score_b?.groundedness)}
             </td>
           </tr>
         ))}
