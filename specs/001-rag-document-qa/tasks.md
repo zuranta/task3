@@ -200,12 +200,12 @@ per-question and aggregate scored comparison identifying the better-performing v
 
 ### Tests for User Story 4
 
-- [ ] T070 [P] [US4] Contract test admin-only enforcement (403 for a non-admin caller) across all `/admin/eval/*` routes in `backend/tests/contract/test_admin_eval_authz.py`
-- [ ] T071 [P] [US4] Contract test `POST`/`GET /admin/eval/dataset-items` in `backend/tests/contract/test_admin_eval_dataset.py`
-- [ ] T072 [P] [US4] Contract test `POST /admin/eval/comparison-runs` and `GET /admin/eval/comparison-runs/{id}` (winner, per-version aggregate scores, `partial` status when a version fails to answer some questions) in `backend/tests/contract/test_admin_eval_runs.py`
-- [ ] T073 [P] [US4] Integration test: end-to-end comparison run against a small fixture dataset, including one question one version fails to answer in `backend/tests/integration/test_comparison_run.py`
-- [ ] T074 [P] [US4] Unit tests for the correctness/relevance/groundedness evaluator functions in `eval/tests/test_evaluators.py`
-- [ ] T075 [P] [US4] Test that the admin-provisioning script (T077) produces an account whose role is `admin` and that account passes the T070 authz checks, in `backend/tests/integration/test_admin_provisioning.py` — addresses `/speckit-analyze` finding U3
+- [X] T070 [P] [US4] Contract test admin-only enforcement (403 for a non-admin caller) across all `/admin/eval/*` routes in `backend/tests/contract/test_admin_eval_authz.py`
+- [X] T071 [P] [US4] Contract test `POST`/`GET /admin/eval/dataset-items` in `backend/tests/contract/test_admin_eval_dataset.py`
+- [X] T072 [P] [US4] Contract test `POST /admin/eval/comparison-runs` and `GET /admin/eval/comparison-runs/{id}` (winner, per-version aggregate scores, `partial` status when a version fails to answer some questions) in `backend/tests/contract/test_admin_eval_runs.py`
+- [X] T073 [P] [US4] Integration test: end-to-end comparison run against a small fixture dataset, including one question one version fails to answer in `backend/tests/integration/test_comparison_run.py`
+- [X] T074 [P] [US4] Unit tests for the correctness/relevance/groundedness evaluator functions in `eval/tests/test_evaluators.py`
+- [X] T075 [P] [US4] Test that the admin-provisioning script (T077) produces an account whose role is `admin` and that account passes the T070 authz checks, in `backend/tests/integration/test_admin_provisioning.py` — addresses `/speckit-analyze` finding U3
 
 ### Implementation for User Story 4
 
