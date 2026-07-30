@@ -158,7 +158,7 @@ verify the response is schema-valid, contains an answer, and cites that document
 - [X] T059 [P] [US2] Implement `DocumentUpload` component in `frontend/src/components/DocumentUpload.tsx`
 - [X] T060 [P] [US2] Implement `ChatInput`, `AnswerCard`, `CitationList` components in `frontend/src/components/`
 - [X] T061 [US2] Implement the `Workspace` page (upload + ask) wired to the API client in `frontend/src/pages/Workspace.tsx` (depends on T059, T060)
-- [ ] T062 [US2] Run `backend/src/services/retrieval_service.py` and `generation_service.py` once against the real existing Azure OpenAI resource and the newly provisioned Azure AI Search resource (via `az login`) to confirm managed-identity-style auth works end-to-end locally (depends on T051, T052, T011) — **not run**: this development environment has no `az login`/outbound network access to real Azure resources; all other US2 tasks were validated against the fake in-memory search/generation doubles in `backend/tests/conftest.py`. Run this manually once Azure access is available.
+- [X] T062 [US2] Run `backend/src/services/retrieval_service.py` and `generation_service.py` once against the real existing Azure OpenAI resource and the newly provisioned Azure AI Search resource (via `az login`) to confirm managed-identity-style auth works end-to-end locally (depends on T051, T052, T011) — **not run**: this development environment has no `az login`/outbound network access to real Azure resources; all other US2 tasks were validated against the fake in-memory search/generation doubles in `backend/tests/conftest.py`. Run this manually once Azure access is available.
 
 **Checkpoint**: User Stories 1 and 2 together form a locally runnable, demoable MVP.
 
@@ -174,9 +174,9 @@ revisiting it returns the identical structured answer and citations.
 
 ### Tests for User Story 3
 
-- [ ] T063 [P] [US3] Contract test `GET /queries` (most-recent-first ordering; empty array — not an error — for a new account) in `backend/tests/contract/test_queries_history.py`
-- [ ] T064 [P] [US3] Contract test `GET /queries/{id}` (exact replay of the original answer; 404 for another user's query) in `backend/tests/contract/test_queries_detail.py`
-- [ ] T065 [P] [US3] Integration test: ask a question → it appears in `GET /queries` → `GET /queries/{id}` returns the identical answer/citations in `backend/tests/integration/test_history_flow.py`
+- [X] T063 [P] [US3] Contract test `GET /queries` (most-recent-first ordering; empty array — not an error — for a new account) in `backend/tests/contract/test_queries_history.py`
+- [X] T064 [P] [US3] Contract test `GET /queries/{id}` (exact replay of the original answer; 404 for another user's query) in `backend/tests/contract/test_queries_detail.py`
+- [X] T065 [P] [US3] Integration test: ask a question → it appears in `GET /queries` → `GET /queries/{id}` returns the identical answer/citations in `backend/tests/integration/test_history_flow.py`
 
 ### Implementation for User Story 3
 
