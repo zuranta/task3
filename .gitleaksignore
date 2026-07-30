@@ -1,0 +1,7 @@
+# Azure built-in role-definition GUID (Key Vault Secrets User) -- public Microsoft
+# documentation, not a secret. Flagged by gitleaks' generic-api-key entropy heuristic.
+f4b1d3b85f2fab179b6ca069b5d72467cb5745c7:infra/modules/roles.bicep:generic-api-key:18
+
+# Deliberately fake, non-production JWT signing secret used only as a pytest fixture
+# value (never a real Key Vault secret). Flagged by the same entropy heuristic.
+0d18c3a5809c99a6c4d421715dcc70b6d7aa4aa6:backend/tests/conftest.py:generic-api-key:19

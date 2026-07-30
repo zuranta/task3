@@ -259,7 +259,7 @@ latency, token consumption, and error rate are all observable, broken down by st
 stories.
 
 - [ ] T096 [P] Fill remaining backend unit-test coverage for edge cases across services (empty/malformed inputs) in `backend/tests/unit/`
-- [ ] T097 [P] Fill remaining frontend Vitest coverage for `RegisterForm`/`LoginForm`/`DocumentUpload`/`HistoryList`/`AdminDashboard` in `frontend/tests/`
+- [ ] T097 [P] Fill remaining frontend Vitest coverage for `DocumentUpload`/`HistoryList`/`AdminDashboard` in `frontend/tests/` (`RegisterForm`/`LoginForm` were already covered in US1, `frontend/tests/components/`)
 - [ ] T098 Run the full `quickstart.md` local-validation scenario set end-to-end (including the Infrastructure section's `az deployment group create` step and manual scenarios 1–6)
 - [ ] T099 Security hardening pass: verify no failure path leaks internal details, cross-checked against FR-004/FR-009/FR-021
 - [ ] T100 Performance check: measure question-answer latency against the ≥95%-within-15s target (SC-011) with a representative document set, running locally against the real Azure AI Search/Azure OpenAI resources
