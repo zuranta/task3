@@ -45,19 +45,19 @@ no hosted service in this iteration.
 **Purpose**: Repository scaffolding, tooling, and the local-only infrastructure this
 iteration needs — no application logic yet.
 
-- [ ] T001 Create `backend/`, `frontend/`, `eval/`, `infra/` directory skeletons per plan.md's Project Structure
-- [ ] T002 [P] Initialize backend Python project (`backend/pyproject.toml`) with FastAPI, Pydantic v2, SQLAlchemy[asyncio], aiosqlite, alembic, azure-identity, openai, azure-search-documents, azure-keyvault-secrets, bcrypt, pyjwt, langsmith, azure-monitor-opentelemetry, pytest, pytest-asyncio, httpx, ruff, black
-- [ ] T003 [P] Initialize frontend project (`frontend/package.json`) with React 18, TypeScript, Vite, React Router, eslint, prettier, vitest, @testing-library/react
-- [ ] T004 [P] Configure backend lint/format (ruff + black) in `backend/pyproject.toml`
-- [ ] T005 [P] Configure frontend lint/format (`frontend/.eslintrc.cjs`, `frontend/.prettierrc`)
-- [ ] T006 [P] Create `backend/.env.example` documenting non-secret settings only (`AZURE_OPENAI_ENDPOINT` for the existing `aoai-jab4fcusuxtqs` resource, `AZURE_OPENAI_DEPLOYMENT=gpt-5.1`, `AZURE_SEARCH_ENDPOINT`, `AZURE_SEARCH_INDEX_NAME`, `KEY_VAULT_URI`) plus a comment pointing at the manual LangSmith-key step from T012
-- [ ] T007 [P] Write `infra/main.bicep` orchestrating `search.bicep`, `keyvault.bicep`, `monitoring.bicep`, and `roles.bicep`, taking `principalId`, `existingOpenAiName`, and `existingOpenAiResourceGroup` parameters — no App Service or new Azure OpenAI module
-- [ ] T008 [P] Write `infra/modules/search.bicep` (the one new resource this project provisions: Azure AI Search, Free SKU)
-- [ ] T009 [P] Write `infra/modules/keyvault.bicep`: RBAC-mode Key Vault that also generates a random JWT signing secret (secure Bicep parameter/`uniqueString`-derived value) and writes it as a Key Vault secret resource at provision time — closes the "who populates the JWT secret" gap from `/speckit-analyze` finding U1
-- [ ] T010 [P] Write `infra/modules/monitoring.bicep` (Application Insights + Log Analytics workspace)
-- [ ] T011 Write `infra/modules/roles.bicep` assigning Search Index Data Contributor/Reader and Key Vault Secrets User on the new resources, and Cognitive Services OpenAI User on the *existing* `aoai-jab4fcusuxtqs` resource, all scoped to the `principalId` parameter (the developer's `az login` object ID for now) (depends on T008–T010)
-- [ ] T012 [P] Document the one-time manual step to set the LangSmith API key into the provisioned Key Vault (`az keyvault secret set --vault-name ... --name LangSmithApiKey --value ...`) in `quickstart.md` — closes the LangSmith-key half of finding U1
-- [ ] T013 [P] Add `.github/workflows/ci.yml` running ruff + black --check + pytest (backend), eslint + prettier --check + vitest (frontend), and a secret-scan step (e.g., gitleaks) — all four gate merge per constitution Principle IV
+- [X] T001 Create `backend/`, `frontend/`, `eval/`, `infra/` directory skeletons per plan.md's Project Structure
+- [X] T002 [P] Initialize backend Python project (`backend/pyproject.toml`) with FastAPI, Pydantic v2, SQLAlchemy[asyncio], aiosqlite, alembic, azure-identity, openai, azure-search-documents, azure-keyvault-secrets, bcrypt, pyjwt, langsmith, azure-monitor-opentelemetry, pytest, pytest-asyncio, httpx, ruff, black
+- [X] T003 [P] Initialize frontend project (`frontend/package.json`) with React 18, TypeScript, Vite, React Router, eslint, prettier, vitest, @testing-library/react
+- [X] T004 [P] Configure backend lint/format (ruff + black) in `backend/pyproject.toml`
+- [X] T005 [P] Configure frontend lint/format (`frontend/.eslintrc.cjs`, `frontend/.prettierrc`)
+- [X] T006 [P] Create `backend/.env.example` documenting non-secret settings only (`AZURE_OPENAI_ENDPOINT` for the existing `aoai-jab4fcusuxtqs` resource, `AZURE_OPENAI_DEPLOYMENT=gpt-5.1`, `AZURE_SEARCH_ENDPOINT`, `AZURE_SEARCH_INDEX_NAME`, `KEY_VAULT_URI`) plus a comment pointing at the manual LangSmith-key step from T012
+- [X] T007 [P] Write `infra/main.bicep` orchestrating `search.bicep`, `keyvault.bicep`, `monitoring.bicep`, and `roles.bicep`, taking `principalId`, `existingOpenAiName`, and `existingOpenAiResourceGroup` parameters — no App Service or new Azure OpenAI module
+- [X] T008 [P] Write `infra/modules/search.bicep` (the one new resource this project provisions: Azure AI Search, Free SKU)
+- [X] T009 [P] Write `infra/modules/keyvault.bicep`: RBAC-mode Key Vault that also generates a random JWT signing secret (secure Bicep parameter/`uniqueString`-derived value) and writes it as a Key Vault secret resource at provision time — closes the "who populates the JWT secret" gap from `/speckit-analyze` finding U1
+- [X] T010 [P] Write `infra/modules/monitoring.bicep` (Application Insights + Log Analytics workspace)
+- [X] T011 Write `infra/modules/roles.bicep` assigning Search Index Data Contributor/Reader and Key Vault Secrets User on the new resources, and Cognitive Services OpenAI User on the *existing* `aoai-jab4fcusuxtqs` resource, all scoped to the `principalId` parameter (the developer's `az login` object ID for now) (depends on T008–T010)
+- [X] T012 [P] Document the one-time manual step to set the LangSmith API key into the provisioned Key Vault (`az keyvault secret set --vault-name ... --name LangSmithApiKey --value ...`) in `quickstart.md` — closes the LangSmith-key half of finding U1
+- [X] T013 [P] Add `.github/workflows/ci.yml` running ruff + black --check + pytest (backend), eslint + prettier --check + vitest (frontend), and a secret-scan step (e.g., gitleaks) — all four gate merge per constitution Principle IV
 
 ---
 
