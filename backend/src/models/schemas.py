@@ -106,3 +106,35 @@ class GeneratedAnswer(BaseModel):
     status: Literal["answered", "no_answer_found"]
     answer_text: str | None = None
     citations: list[GeneratedCitation] = Field(default_factory=list)
+
+
+# --- User Story 4: Compare Two System Versions Against a Benchmark Dataset --------
+
+
+class DatasetItem(BaseModel):
+    question: str = Field(min_length=1)
+    expected_answer: str = Field(min_length=1)
+    expected_source_reference: str | None = None
+
+
+class ComparisonRunRequest(BaseModel):
+    version_a_label: str = Field(min_length=1)
+    version_b_label: str = Field(min_length=1)
+
+
+class AggregateScore(BaseModel):
+    correctness: float
+    relevance: float
+    groundedness: float
+
+
+class ComparisonRun(BaseModel):
+    id: str
+    version_a_label: str
+    version_b_label: str
+    status: Literal["running", "completed", "partial"]
+    aggregate_score_a: AggregateScore | None = None
+    aggregate_score_b: AggregateScore | None = None
+    winner: Literal["a", "b", "tie"] | None = None
+    started_at: datetime
+    completed_at: datetime | None = None

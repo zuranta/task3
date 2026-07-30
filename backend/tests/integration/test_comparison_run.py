@@ -66,7 +66,10 @@ async def test_end_to_end_comparison_run_without_failures_is_completed(db_sessio
     monkeypatch.setattr(eval_service, "run_experiment", fake_run_experiment)
 
     admin = User(
-        email="evaluator2@example.com", username="evaluatory", password_hash="x", role=UserRole.admin
+        email="evaluator2@example.com",
+        username="evaluatory",
+        password_hash="x",
+        role=UserRole.admin,
     )
     db_session.add(admin)
     await db_session.flush()
