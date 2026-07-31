@@ -1,51 +1,61 @@
-import { useState } from "react";
+import { BarChart3, ClipboardList, History, LogOut } from "lucide-react";
 import { Link } from "react-router-dom";
 
+import { Button } from "../../components/ui/button";
 import { useAuth } from "../auth/auth";
 import { DocumentUpload } from "../upload/DocumentUpload";
 import { ChatInput } from "./ChatInput";
-import { QueryRecord, askQuestion } from "../query/queries";
-import { ApiError } from "../auth/auth";
+import { ChatWindow } from "./ChatWindow";
+import { useConversation } from "./useConversation";
 
 export function ChatPage() {
   const { logout, isAdmin } = useAuth();
-  const [currentQuery, setCurrentQuery] = useState<QueryRecord | null>(null);
-  const [isAsking, setIsAsking] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  async function handleAsk(question: string) {
-    setError(null);
-    setIsAsking(true);
-    try {
-      setCurrentQuery(await askQuestion(question));
-    } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Something went wrong. Please try again.");
-    } finally {
-      setIsAsking(false);
-    }
-  }
+  const { messages, sendQuestion, isPending } = useConversation();
 
   return (
-    <main>
-      <h1>Workspace</h1>
-      <Link to="/history">View history</Link>
-      {isAdmin && <Link to="/admin/eval">Admin: Evaluation</Link>}
-      {isAdmin && <Link to="/admin/metrics">Admin: Operational Metrics</Link>}
-      <button type="button" onClick={logout}>
-        Log out
-      </button>
+    <div className="flex h-screen flex-col bg-muted/40">
+      <header className="flex shrink-0 items-center justify-between border-b border-border bg-background px-4 py-3">
+        <h1 className="text-lg font-semibold">RAG Document Q&amp;A</h1>
+        <nav className="flex items-center gap-1">
+          <Button variant="ghost" size="sm" asChild>
+            <Link to="/history">
+              <History className="h-4 w-4" />
+              History
+            </Link>
+          </Button>
+          {isAdmin && (
+            <Button variant="ghost" size="sm" asChild>
+              <Link to="/admin/eval">
+                <ClipboardList className="h-4 w-4" />
+                Evaluation
+              </Link>
+            </Button>
+          )}
+          {isAdmin && (
+            <Button variant="ghost" size="sm" asChild>
+              <Link to="/admin/metrics">
+                <BarChart3 className="h-4 w-4" />
+                Metrics
+              </Link>
+            </Button>
+          )}
+          <Button variant="ghost" size="sm" onClick={logout}>
+            <LogOut className="h-4 w-4" />
+            Log out
+          </Button>
+        </nav>
+      </header>
 
-      {error && <p role="alert">{error}</p>}
+      <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-4 lg:flex-row lg:overflow-hidden">
+        <aside className="shrink-0 lg:w-80 lg:overflow-y-auto">
+          <DocumentUpload />
+        </aside>
 
-      <section>
-        <DocumentUpload />
-      </section>
-
-      <section>
-        <h2>Ask a question</h2>
-        <ChatInput onAsk={handleAsk} isAsking={isAsking} />
-        {currentQuery?.answer && <p>{currentQuery.answer.answer_text}</p>}
-      </section>
-    </main>
+        <main className="flex min-h-[60vh] flex-1 flex-col rounded-lg border border-border bg-background lg:min-h-0">
+          <ChatWindow messages={messages} />
+          <ChatInput onAsk={sendQuestion} isAsking={isPending} />
+        </main>
+      </div>
+    </div>
   );
 }
