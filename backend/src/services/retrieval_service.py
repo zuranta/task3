@@ -158,30 +158,37 @@ async def list_passages(*, user_id: str, document_id: str) -> list[Passage]:
     """All active passages for one document, in their original chunk order --
     powers the "view the source" affordance (clicking a document to see what
     it was indexed as). Scoped by the same mandatory user_id+status filter as
-    `search`, never a client-suppliable one (research.md §3)."""
+    `search`, never a client-suppliable one (research.md §3).
+
+    Sorts client-side rather than via Azure AI Search's `$orderby` on
+    `chunk_index`: that field isn't marked `sortable` in the index schema
+    (nothing needed to sort by it before this feature), and Azure AI Search
+    cannot add `sortable` to a field of an already-existing index without
+    rebuilding it -- so a server-side orderby would 400 for every
+    already-provisioned deployment, not just newly-created ones.
+    """
     client = _search_client()
     filter_expr = (
         f"document_id eq '{document_id}' and user_id eq '{user_id}' and status eq 'active'"
     )
     try:
-        results = await client.search(
-            search_text="*",
-            filter=filter_expr,
-            order_by=["chunk_index asc"],
-        )
-        return [
-            Passage(
-                id=doc["id"],
-                document_id=doc["document_id"],
-                location_label=doc["location_label"],
-                content=doc["content"],
-            )
-            async for doc in results
-        ]
+        results = await client.search(search_text="*", filter=filter_expr)
+        docs = [doc async for doc in results]
     except HttpResponseError as exc:
         raise UpstreamServiceError(
             "The document's passages could not be retrieved right now. Please try again."
         ) from exc
+
+    docs.sort(key=lambda doc: doc["chunk_index"])
+    return [
+        Passage(
+            id=doc["id"],
+            document_id=doc["document_id"],
+            location_label=doc["location_label"],
+            content=doc["content"],
+        )
+        for doc in docs
+    ]
 
 
 async def search(*, user_id: str, question: str, question_vector: list[float]) -> list[Passage]:
