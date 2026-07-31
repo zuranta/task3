@@ -258,10 +258,10 @@ latency, token consumption, and error rate are all observable, broken down by st
 **Purpose**: Coverage gaps, hardening, and end-to-end local validation across all
 stories.
 
-- [ ] T096 [P] Fill remaining backend unit-test coverage for edge cases across services (empty/malformed inputs) in `backend/tests/unit/`
-- [ ] T097 [P] Fill remaining frontend Vitest coverage for `DocumentUpload`/`HistoryList`/`AdminDashboard` in `frontend/tests/` (`RegisterForm`/`LoginForm` were already covered in US1, `frontend/tests/components/`)
+- [X] T096 [P] Fill remaining backend unit-test coverage for edge cases across services (empty/malformed inputs) in `backend/tests/unit/` — added generation_service.py coverage (previously zero direct coverage anywhere), rate_limit_service.py rolling-window-reset edge case
+- [X] T097 [P] Fill remaining frontend Vitest coverage for `DocumentUpload`/`HistoryList`/`AdminDashboard` in `frontend/tests/` (`RegisterForm`/`LoginForm` were already covered in US1, `frontend/tests/components/`)
 - [ ] T098 Run the full `quickstart.md` local-validation scenario set end-to-end (including the Infrastructure section's `az deployment group create` step and manual scenarios 1–6)
-- [ ] T099 Security hardening pass: verify no failure path leaks internal details, cross-checked against FR-004/FR-009/FR-021
+- [X] T099 Security hardening pass: verify no failure path leaks internal details, cross-checked against FR-004/FR-009/FR-021 — audited every raise site in backend/src (all use curated static messages, no raw exception interpolation); added a regression test proving an unexpected exception's message never reaches the client
 - [ ] T100 Performance check: measure question-answer latency against the ≥95%-within-15s target (SC-011) with a representative document set, running locally against the real Azure AI Search/Azure OpenAI resources
 - [ ] T101 [P] Write `backend/README.md` and `frontend/README.md` covering local setup (uvicorn + Vite, `az login`), testing, and the current no-App-Service scope (linking to quickstart.md)
 
