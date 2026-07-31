@@ -1,9 +1,16 @@
 # Frontend — RAG Document Q&A Application
 
-React 18 + TypeScript, built with Vite. Talks to the FastAPI backend over
-`/api/v1` (see `vite.config.ts`'s dev-server proxy to `http://localhost:8000`).
+React 18 + TypeScript + Vite + React Router. Talks to the FastAPI backend over
+`/api/v1` (see `vite.config.ts`'s dev-server proxy). See
+[`../specs/001-rag-document-qa/quickstart.md`](../specs/001-rag-document-qa/quickstart.md)
+for end-to-end manual validation scenarios (register/login, upload → ask → cited
+answer, history, admin eval/metrics).
 
 ## Local setup
+
+Prerequisites: Node 20 LTS, and the backend running at `http://127.0.0.1:8000`
+(see [`../backend/README.md`](../backend/README.md) — it needs its own `az login`
+for Azure access; the frontend itself has no Azure dependency).
 
 ```bash
 npm install
@@ -13,6 +20,27 @@ npm run test     # Vitest + React Testing Library
 npm run lint     # ESLint
 npm run format   # Prettier --check
 ```
+
+Or, from the repo root: `make install_frontend`, `make run_frontend`. Dev server
+listens on `http://localhost:5173`. If port 8000 is unavailable, override the
+proxy target locally without touching the committed default: `BACKEND_PORT=8001
+npm run dev` (and start the backend on the matching port).
+
+## Testing
+
+```bash
+npm run test      # Vitest + React Testing Library
+npm run lint       # eslint
+npm run format     # prettier --check
+npm run build      # tsc -b && vite build
+```
+
+Or from the repo root: `make test_frontend`, `make lint_frontend`.
+
+Tests mock the service layer (`src/features/*/*.ts`, e.g. `documents.ts`,
+`queries.ts`) rather than hitting a real backend — see `tests/features/**/*.test.tsx`
+for the pattern (render with a mocked service call, assert on rendered output /
+calls made).
 
 ## Design system
 
@@ -64,6 +92,21 @@ src/
 └── main.tsx
 ```
 
+## Routes
+
+| Path                  | Who                                          | Page                                                  |
+| --------------------- | -------------------------------------------- | ----------------------------------------------------- |
+| `/login`, `/register` | anyone (redirects away if already logged in) | `LoginPage`, `RegisterPage`                           |
+| `/`                   | any authenticated user                       | `ChatPage` (upload + conversational Q&A)              |
+| `/history`            | any authenticated user                       | `HistoryPage`                                         |
+| `/admin/eval`         | admin/evaluator role only                    | `AdminEvalPage` (benchmark dataset + comparison runs) |
+| `/admin/metrics`      | admin/evaluator role only                    | `AdminMetricsPage` (operational health)               |
+
+`isAdmin` (decoded client-side from the JWT, in `src/features/auth/auth.ts`) gates
+the two admin routes and their nav links — the backend independently enforces
+`require_admin` on every admin route regardless, so this is a UX convenience, not
+the actual security boundary.
+
 ## The chat conversation
 
 The live question/answer screen (`features/chat/`) holds its message list
@@ -80,3 +123,14 @@ The backend's `/queries` endpoint returns one JSON response, not a
 token stream, so this iteration doesn't stream partial output — the typing
 indicator stays visible for the full wait and the answer renders all at
 once. See `specs/001-rag-document-qa/research.md` for the full rationale.
+
+Clicking a citation opens a dialog with the exact passage it was grounded in;
+clicking a `ready` document in the sidebar opens a dialog listing everything
+that document was indexed as (`GET /documents/{id}/passages`) — no raw file
+bytes are ever stored or served, only extracted passage text.
+
+## No App Service yet
+
+There's no hosted deployment of either app in this iteration — both run locally
+against real (or, for tests, mocked) Azure resources. See the backend README's
+"Azure / no App Service yet" section for what changes once hosting is added.

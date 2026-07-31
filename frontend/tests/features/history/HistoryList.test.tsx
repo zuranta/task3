@@ -35,6 +35,8 @@ describe("HistoryList", () => {
     render(<HistoryList queries={queries} onSelect={onSelect} />);
 
     expect(screen.getByText("What is the refund policy?")).toBeInTheDocument();
+    expect(screen.getByText("answered")).toBeInTheDocument();
+    expect(screen.getByText("What is on the moon?")).toBeInTheDocument();
     expect(screen.getByText("no answer found")).toBeInTheDocument();
 
     await user.click(screen.getByText("What is on the moon?"));
