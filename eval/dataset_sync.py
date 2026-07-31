@@ -25,7 +25,7 @@ def add_dataset_item(
     *, question: str, expected_answer: str, expected_source_reference: str | None = None
 ) -> dict:
     ensure_dataset()
-    _client().create_example(
+    example = _client().create_example(
         inputs={"question": question},
         outputs={
             "expected_answer": expected_answer,
@@ -34,6 +34,7 @@ def add_dataset_item(
         dataset_name=_DATASET_NAME,
     )
     return {
+        "id": str(example.id),
         "question": question,
         "expected_answer": expected_answer,
         "expected_source_reference": expected_source_reference,
@@ -47,12 +48,17 @@ def list_dataset_items() -> list[dict]:
         outputs = example.outputs or {}
         items.append(
             {
+                "id": str(example.id),
                 "question": example.inputs.get("question", ""),
                 "expected_answer": outputs.get("expected_answer", ""),
                 "expected_source_reference": outputs.get("expected_source_reference"),
             }
         )
     return items
+
+
+def delete_dataset_items(item_ids: list[str]) -> None:
+    _client().delete_examples(item_ids)
 
 
 if __name__ == "__main__":

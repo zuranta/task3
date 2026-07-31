@@ -3,6 +3,13 @@ import { ApiError, authHeaders } from "./auth";
 const API_BASE = "/api/v1/admin/eval";
 
 export interface DatasetItem {
+  id: string;
+  question: string;
+  expected_answer: string;
+  expected_source_reference: string | null;
+}
+
+export interface NewDatasetItem {
   question: string;
   expected_answer: string;
   expected_source_reference: string | null;
@@ -35,7 +42,7 @@ async function parseErrorDetail(response: Response): Promise<string> {
   }
 }
 
-export async function addDatasetItem(item: DatasetItem): Promise<DatasetItem> {
+export async function addDatasetItem(item: NewDatasetItem): Promise<DatasetItem> {
   const response = await fetch(`${API_BASE}/dataset-items`, {
     method: "POST",
     headers: { "Content-Type": "application/json", ...authHeaders() },
@@ -53,6 +60,17 @@ export async function listDatasetItems(): Promise<DatasetItem[]> {
     throw new ApiError(await parseErrorDetail(response), response.status);
   }
   return response.json();
+}
+
+export async function deleteDatasetItems(ids: string[]): Promise<void> {
+  const response = await fetch(`${API_BASE}/dataset-items`, {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json", ...authHeaders() },
+    body: JSON.stringify({ ids }),
+  });
+  if (!response.ok) {
+    throw new ApiError(await parseErrorDetail(response), response.status);
+  }
 }
 
 export async function startComparisonRun(
@@ -86,4 +104,15 @@ export async function getComparisonRun(runId: string): Promise<ComparisonRun> {
     throw new ApiError(await parseErrorDetail(response), response.status);
   }
   return response.json();
+}
+
+export async function deleteComparisonRuns(ids: string[]): Promise<void> {
+  const response = await fetch(`${API_BASE}/comparison-runs`, {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json", ...authHeaders() },
+    body: JSON.stringify({ ids }),
+  });
+  if (!response.ok) {
+    throw new ApiError(await parseErrorDetail(response), response.status);
+  }
 }

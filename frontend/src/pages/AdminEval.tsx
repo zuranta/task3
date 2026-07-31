@@ -4,14 +4,31 @@ import { Link } from "react-router-dom";
 import { AdminDashboard } from "../components/AdminDashboard";
 import {
   ComparisonRun,
+  DatasetItem,
   addDatasetItem,
+  deleteComparisonRuns,
+  deleteDatasetItems,
   listComparisonRuns,
+  listDatasetItems,
   startComparisonRun,
 } from "../services/adminEval";
 import { ApiError } from "../services/auth";
 
+function toggleId(ids: Set<string>, id: string): Set<string> {
+  const next = new Set(ids);
+  if (next.has(id)) {
+    next.delete(id);
+  } else {
+    next.add(id);
+  }
+  return next;
+}
+
 export function AdminEval() {
   const [runs, setRuns] = useState<ComparisonRun[]>([]);
+  const [datasetItems, setDatasetItems] = useState<DatasetItem[]>([]);
+  const [selectedItemIds, setSelectedItemIds] = useState<Set<string>>(new Set());
+  const [selectedRunIds, setSelectedRunIds] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
   const [isStarting, setIsStarting] = useState(false);
 
@@ -22,6 +39,7 @@ export function AdminEval() {
 
   useEffect(() => {
     void refreshRuns();
+    void refreshDatasetItems();
   }, []);
 
   async function refreshRuns() {
@@ -29,6 +47,14 @@ export function AdminEval() {
       setRuns(await listComparisonRuns());
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Could not load comparison runs.");
+    }
+  }
+
+  async function refreshDatasetItems() {
+    try {
+      setDatasetItems(await listDatasetItems());
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Could not load benchmark questions.");
     }
   }
 
@@ -43,8 +69,41 @@ export function AdminEval() {
       });
       setQuestion("");
       setExpectedAnswer("");
+      await refreshDatasetItems();
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Could not add the dataset item.");
+    }
+  }
+
+  async function handleDeleteDatasetItems(ids: string[]) {
+    setError(null);
+    try {
+      await deleteDatasetItems(ids);
+      setSelectedItemIds((current) => {
+        const next = new Set(current);
+        ids.forEach((id) => next.delete(id));
+        return next;
+      });
+      await refreshDatasetItems();
+    } catch (err) {
+      setError(
+        err instanceof ApiError ? err.message : "Could not delete the benchmark question(s).",
+      );
+    }
+  }
+
+  async function handleDeleteComparisonRuns(ids: string[]) {
+    setError(null);
+    try {
+      await deleteComparisonRuns(ids);
+      setSelectedRunIds((current) => {
+        const next = new Set(current);
+        ids.forEach((id) => next.delete(id));
+        return next;
+      });
+      await refreshRuns();
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Could not delete the comparison run(s).");
     }
   }
 
@@ -93,6 +152,68 @@ export function AdminEval() {
       </section>
 
       <section>
+        <h2>Benchmark questions ({datasetItems.length})</h2>
+        {datasetItems.length === 0 ? (
+          <p>No benchmark questions yet.</p>
+        ) : (
+          <>
+            <button
+              type="button"
+              disabled={selectedItemIds.size === 0}
+              onClick={() => handleDeleteDatasetItems(Array.from(selectedItemIds))}
+            >
+              Delete selected ({selectedItemIds.size})
+            </button>
+            <table aria-label="Benchmark questions">
+              <thead>
+                <tr>
+                  <th>
+                    <input
+                      type="checkbox"
+                      aria-label="Select all benchmark questions"
+                      checked={selectedItemIds.size === datasetItems.length}
+                      onChange={(e) =>
+                        setSelectedItemIds(
+                          e.target.checked
+                            ? new Set(datasetItems.map((item) => item.id))
+                            : new Set(),
+                        )
+                      }
+                    />
+                  </th>
+                  <th>Question</th>
+                  <th>Expected answer</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {datasetItems.map((item) => (
+                  <tr key={item.id}>
+                    <td>
+                      <input
+                        type="checkbox"
+                        aria-label={`Select benchmark question: ${item.question}`}
+                        checked={selectedItemIds.has(item.id)}
+                        onChange={() => setSelectedItemIds((current) => toggleId(current, item.id))}
+                      />
+                    </td>
+                    <td>{item.question}</td>
+                    <td>{item.expected_answer}</td>
+                    <td>
+                      <button type="button" onClick={() => handleDeleteDatasetItems([item.id])}>
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </>
+        )}
+        <p>A comparison run below is scored against every question listed here.</p>
+      </section>
+
+      <section>
         <h2>Run a comparison</h2>
         <form onSubmit={handleStartRun} aria-label="Start comparison run">
           <label htmlFor="version-a">Version A label</label>
@@ -117,7 +238,21 @@ export function AdminEval() {
 
       <section>
         <h2>Past comparison runs</h2>
-        <AdminDashboard runs={runs} />
+        {runs.length > 0 && (
+          <button
+            type="button"
+            disabled={selectedRunIds.size === 0}
+            onClick={() => handleDeleteComparisonRuns(Array.from(selectedRunIds))}
+          >
+            Delete selected ({selectedRunIds.size})
+          </button>
+        )}
+        <AdminDashboard
+          runs={runs}
+          selectedIds={selectedRunIds}
+          onToggleSelect={(id) => setSelectedRunIds((current) => toggleId(current, id))}
+          onDeleteOne={(id) => handleDeleteComparisonRuns([id])}
+        />
       </section>
     </main>
   );

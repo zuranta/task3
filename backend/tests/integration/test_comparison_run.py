@@ -80,3 +80,43 @@ async def test_end_to_end_comparison_run_without_failures_is_completed(db_sessio
 
     assert run.status == ComparisonRunStatus.completed
     assert run.winner.value == "tie"
+
+
+@pytest.mark.asyncio
+async def test_delete_comparison_runs_removes_them(db_session, monkeypatch):
+    def fake_run_experiment(*, version_a_label, version_b_label, eval_user_id="eval-harness"):
+        return {
+            "version_a_label": version_a_label,
+            "version_b_label": version_b_label,
+            "langsmith_experiment_id_a": "exp-a",
+            "langsmith_experiment_id_b": "exp-b",
+            "aggregate_score_a": {"correctness": 1.0, "relevance": 1.0, "groundedness": 1.0},
+            "aggregate_score_b": {"correctness": 1.0, "relevance": 1.0, "groundedness": 1.0},
+            "winner": "tie",
+            "had_failures": False,
+        }
+
+    monkeypatch.setattr(eval_service, "run_experiment", fake_run_experiment)
+
+    admin = User(
+        email="evaluator3@example.com",
+        username="evaluatorz",
+        password_hash="x",
+        role=UserRole.admin,
+    )
+    db_session.add(admin)
+    await db_session.flush()
+
+    run_to_delete = await eval_service.start_comparison_run(
+        db_session, user_id=admin.id, version_a_label="baseline", version_b_label="candidate"
+    )
+    run_to_keep = await eval_service.start_comparison_run(
+        db_session, user_id=admin.id, version_a_label="baseline", version_b_label="candidate"
+    )
+
+    await eval_service.delete_comparison_runs(db_session, run_ids=[run_to_delete.id])
+
+    remaining = await eval_service.list_comparison_runs(db_session)
+    remaining_ids = {run.id for run in remaining}
+    assert run_to_delete.id not in remaining_ids
+    assert run_to_keep.id in remaining_ids

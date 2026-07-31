@@ -7,11 +7,12 @@ ComparisonRun rows so the admin UI can list past runs without querying
 LangSmith directly each time.
 """
 
+import asyncio
 import sys
 from datetime import UTC, datetime
 from pathlib import Path
 
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.errors import NotFoundError, UpstreamServiceError
@@ -41,6 +42,10 @@ def list_dataset_items() -> list[schemas.DatasetItem]:
     return [schemas.DatasetItem(**item) for item in dataset_sync.list_dataset_items()]
 
 
+def delete_dataset_items(item_ids: list[str]) -> None:
+    dataset_sync.delete_dataset_items(item_ids)
+
+
 async def start_comparison_run(
     db: AsyncSession, *, user_id: str, version_a_label: str, version_b_label: str
 ) -> ComparisonRun:
@@ -55,7 +60,17 @@ async def start_comparison_run(
     await db.refresh(run)
 
     try:
-        result = run_experiment(version_a_label=version_a_label, version_b_label=version_b_label)
+        # run_experiment()'s target() calls asyncio.run() per question, which
+        # fails if invoked on this coroutine's own thread (uvicorn's event
+        # loop is already running there). Running it on a plain worker
+        # thread gives each asyncio.run() call a thread with no loop of its
+        # own, matching how it behaves as a standalone script.
+        result = await asyncio.to_thread(
+            run_experiment,
+            version_a_label=version_a_label,
+            version_b_label=version_b_label,
+            eval_user_id=user_id,
+        )
     except Exception as exc:
         run.status = ComparisonRunStatus.partial
         run.completed_at = datetime.now(UTC)
@@ -89,3 +104,8 @@ async def get_comparison_run(db: AsyncSession, *, run_id: str) -> ComparisonRun:
     if run is None:
         raise NotFoundError("Comparison run not found.")
     return run
+
+
+async def delete_comparison_runs(db: AsyncSession, *, run_ids: list[str]) -> None:
+    await db.execute(delete(ComparisonRun).where(ComparisonRun.id.in_(run_ids)))
+    await db.commit()

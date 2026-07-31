@@ -112,6 +112,7 @@ class GeneratedAnswer(BaseModel):
 
 
 class DatasetItem(BaseModel):
+    id: str | None = None
     question: str = Field(min_length=1)
     expected_answer: str = Field(min_length=1)
     expected_source_reference: str | None = None
@@ -120,6 +121,10 @@ class DatasetItem(BaseModel):
 class ComparisonRunRequest(BaseModel):
     version_a_label: str = Field(min_length=1)
     version_b_label: str = Field(min_length=1)
+
+
+class DeleteIdsRequest(BaseModel):
+    ids: list[str] = Field(min_length=1)
 
 
 class AggregateScore(BaseModel):

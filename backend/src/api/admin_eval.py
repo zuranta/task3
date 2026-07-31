@@ -13,7 +13,7 @@ from src.core.db import get_db
 from src.core.security import require_admin
 from src.models.db import ComparisonRun as ComparisonRunRow
 from src.models.db import User
-from src.models.schemas import ComparisonRun, ComparisonRunRequest, DatasetItem
+from src.models.schemas import ComparisonRun, ComparisonRunRequest, DatasetItem, DeleteIdsRequest
 from src.services import eval_service
 
 router = APIRouter(prefix="/api/v1/admin/eval", tags=["admin-eval"])
@@ -52,6 +52,14 @@ async def list_dataset_items(
     return eval_service.list_dataset_items()
 
 
+@router.delete("/dataset-items", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_dataset_items(
+    body: DeleteIdsRequest,
+    _admin: Annotated[User, Depends(require_admin)],
+) -> None:
+    eval_service.delete_dataset_items(body.ids)
+
+
 @router.post("/comparison-runs", response_model=ComparisonRun, status_code=status.HTTP_202_ACCEPTED)
 async def start_comparison_run(
     body: ComparisonRunRequest,
@@ -84,3 +92,12 @@ async def get_comparison_run(
 ) -> ComparisonRun:
     run = await eval_service.get_comparison_run(db, run_id=run_id)
     return _to_schema(run)
+
+
+@router.delete("/comparison-runs", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_comparison_runs(
+    body: DeleteIdsRequest,
+    _admin: Annotated[User, Depends(require_admin)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> None:
+    await eval_service.delete_comparison_runs(db, run_ids=body.ids)

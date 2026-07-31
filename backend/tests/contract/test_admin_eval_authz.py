@@ -57,6 +57,28 @@ async def test_non_admin_cannot_get_a_comparison_run(client, register_user):
 
 
 @pytest.mark.asyncio
+async def test_non_admin_cannot_delete_dataset_items(client, register_user):
+    headers, _ = await register_user("regular6")
+
+    response = await client.request(
+        "DELETE", "/api/v1/admin/eval/dataset-items", headers=headers, json={"ids": ["x"]}
+    )
+
+    assert response.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_non_admin_cannot_delete_comparison_runs(client, register_user):
+    headers, _ = await register_user("regular7")
+
+    response = await client.request(
+        "DELETE", "/api/v1/admin/eval/comparison-runs", headers=headers, json={"ids": ["x"]}
+    )
+
+    assert response.status_code == 403
+
+
+@pytest.mark.asyncio
 async def test_unauthenticated_caller_cannot_access_admin_eval_routes(client):
     response = await client.get("/api/v1/admin/eval/dataset-items")
     assert response.status_code == 401
