@@ -206,6 +206,113 @@ retention, rate-limit storage, secrets home) the spec/user input didn't pin down
   a secret-scanning step (e.g., `gitleaks`). All four must pass before merge; no override.
 - **Rationale**: Directly operationalizes constitution Principle IV.
 
+## 13. Frontend styling foundation & design system (User Story 6)
+
+- **Decision**: Tailwind CSS is the sole styling mechanism (no hand-rolled CSS files
+  beyond one `index.css` importing Tailwind's layers and defining design tokens as CSS
+  custom properties). shadcn/ui supplies the common UI primitives — button, input,
+  textarea, label, card, alert, badge, avatar, skeleton, separator, dialog, table, form —
+  generated into `components/ui/` via the shadcn CLI (`components.json`), not hand-built
+  from scratch. shadcn/ui's own dependencies come with it: Radix UI primitives
+  (accessible interaction behavior — focus trapping, ARIA roles), `class-variance-authority`
+  (`cva`) for variant props, `tailwind-merge` + `clsx` (combined as a `cn()` helper in
+  `lib/utils.ts`), and `lucide-react` for icons.
+  - **Color palette**: A small set of semantic CSS-variable tokens (shadcn's standard
+    convention) — `background`, `foreground`, `card`, `primary`, `primary-foreground`,
+    `secondary`, `muted`, `muted-foreground`, `accent`, `destructive`, `border`, `input`,
+    `ring` — defined once in `index.css` and consumed everywhere via Tailwind's
+    `bg-primary`, `text-muted-foreground`, etc. An additional `citation` accent pair
+    (`citation` / `citation-foreground`, a distinct muted tone) backs the citation badge
+    so citations are visually distinguishable from answer text (FR-031) through color,
+    not just an icon.
+  - **Spacing scale**: Tailwind's default 4px-based scale (`0, 1, 2, 3, 4, 6, 8, 12, 16…`)
+    used directly — no custom pixel values in component code — so every screen shares the
+    same rhythm (FR-029, SC-013).
+  - **Typography**: A fixed small set of text-style combinations reused across every
+    screen rather than one-off styles per component: page titles (`text-2xl font-semibold`),
+    section headings (`text-lg font-medium`), body/message text (`text-sm` /
+    `text-base font-normal`), and secondary/meta text (`text-xs text-muted-foreground`).
+    One font family (system font stack, no webfont dependency to keep this scope small).
+- **Rationale**: Tailwind + shadcn/ui directly satisfies the user's explicit instruction
+  and constitution Principle I (no duplicated hand-styled elements per screen — one
+  shared, reviewed set of primitives). shadcn/ui's copy-into-repo model (unlike a
+  component-library dependency such as MUI/Chakra) means the primitives are ordinary
+  project source under the same lint/format/test gates (Principle IV) as everything
+  else, rather than an opaque third-party runtime dependency.
+- **Alternatives considered**: Hand-rolled CSS Modules/styled-components — rejected,
+  this is exactly the "unstyled/inconsistent one-off" pattern FR-029/SC-013 are written
+  against. MUI or Chakra UI — rejected, both ship their own theming runtime and visual
+  language that would need overriding to look coherent with a custom palette, whereas
+  shadcn/ui's primitives are unstyled-by-default Radix behavior plus Tailwind classes the
+  project already owns.
+
+## 14. Frontend structure: feature folders (User Story 6)
+
+- **Decision**: `frontend/src/` is organized by feature, mirroring the backend's
+  `api/`→`services/` per-concern pattern: `features/auth/`, `features/upload/`,
+  `features/query/`, `features/chat/`, `features/history/`, plus `features/admin/` (the
+  existing admin-eval/admin-metrics screens, kept as their own feature folder since they
+  are not part of the five the user named and are explicitly non-conversational per
+  spec.md's Assumptions). Each feature folder owns its own page component(s), its own
+  API-service module, and any components used only by that feature; `components/ui/`
+  (shadcn/ui primitives) and `lib/utils.ts` (the `cn()` helper) are the only
+  cross-feature shared code, so no feature reaches into another feature's internals.
+- **Rationale**: Directly matches the user's instruction and keeps each feature
+  independently reviewable/testable (constitution Principle V) the same way the backend's
+  per-router/per-service split already is. Restricting shared code to `components/ui/`
+  and `lib/` is what makes "use the shared shadcn/ui components rather than duplicating
+  custom styled elements" enforceable — there is no second place to define a styled
+  button.
+- **Alternatives considered**: The existing flat `components/` + `pages/` + `services/`
+  split (current code) — rejected going forward; it groups by technical layer instead of
+  by feature, which is exactly what the user asked to change, and it was already
+  starting to mix unrelated concerns in single folders (e.g., `AdminDashboard.tsx`
+  alongside `LoginForm.tsx`).
+
+## 15. Chat conversation state & streaming (User Story 6, FR-033/FR-034)
+
+- **Decision**: The live question/answer screen (`features/chat/`) holds conversation
+  state client-side only, as an array of view-model messages:
+  `{ id, role: 'user' | 'assistant', content, citations?, timestamp, status: 'pending' |
+  'complete' | 'error' }`. Submitting a question synchronously appends a `role: 'user'`
+  message (`status: complete`) and a placeholder `role: 'assistant'` message
+  (`status: pending`, empty `content`) to the array — the pending assistant message is
+  what renders the animated typing indicator (FR-034) — then calls `POST /queries`. On
+  response, the placeholder is updated in place with the returned `answer_text`,
+  `citations`, and `status: complete` (or `status: error` with a styled error message
+  body, per FR-030, on failure/timeout). A `useRef` on the scroll container plus a
+  `useEffect` keyed on the messages array scrolls to bottom on every append (auto-scroll).
+  This state is intentionally ephemeral (component/session state, not persisted
+  separately) — it is a live rendering of the same `QueryRecord`/`Answer`/`Citation` data
+  the History feature (User Story 3) already fetches and stores server-side; see
+  data-model.md's Frontend View Models section.
+  - **Streaming**: `POST /queries` (contracts/openapi.yaml) returns one JSON
+    `QueryRecord` body — there is no SSE/chunked/streaming variant in the current
+    contract, and `generation_service.py`'s Azure OpenAI Structured Outputs call is a
+    single blocking completion, not a token stream. Per the user's own instruction
+    ("if the backend supports streaming... otherwise show the typing indicator until the
+    full structured response arrives"), this iteration takes the **non-streaming path**:
+    the typing indicator stays visible for the entire ~15s wait (SC-011), and the
+    complete structured answer renders into the bubble all at once when the request
+    resolves — exactly what FR-034 already specifies. Token-level streaming would
+    require a new backend contract (a chunked/SSE endpoint and a non-Structured-Outputs,
+    incremental generation call) and is out of scope for this amendment; if added later,
+    only `features/chat/`'s response-handling call site changes, not the message-state
+    shape above.
+- **Rationale**: Keeping the message list as plain client state (not a new persisted
+  entity) avoids duplicating what `Query`/`Answer`/`Citation` already store, matching the
+  spec Assumption that the conversational view is a presentation redesign of the existing
+  live Q&A loop, not a new data model. Deriving the typing indicator from message
+  `status` (rather than a separate boolean) keeps exactly one source of truth for "is the
+  last turn still generating."
+- **Alternatives considered**: A separate `useState<boolean> isTyping` flag alongside the
+  message array — rejected, it can drift out of sync with the message list (e.g., on
+  error) whereas deriving it from the pending message's own `status` cannot desync by
+  construction. Faking word-by-word "streaming" by chunking the already-complete answer
+  client-side after it arrives — rejected as misleading: it would present a
+  fully-generated answer as if it were still being produced, contradicting FR-034's
+  requirement that the indicator reflects actual generation-in-progress state.
+
 **Output**: All open implementation questions above are resolved; no
 `NEEDS CLARIFICATION` markers remain in the Technical Context.
 </content>

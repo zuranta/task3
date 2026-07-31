@@ -48,4 +48,14 @@
   the Azure AI Search Free-tier storage ceiling. Updated FR-009 and the corresponding
   edge case and Assumptions bullet. Re-validated — all 16/16 checklist items still
   pass; no regressions.
+- Amendment (2026-07-31, visual design): added User Story 6 (P2) — coherent visual
+  design across every screen, styled loading/empty/error states, citations visually
+  distinguished from answer text, responsive desktop/mobile layout, and a chatbot-style
+  conversational redesign of the question/answer screen with a "thinking" indicator.
+  Added FR-029–FR-034, SC-013–SC-016, 2 supporting edge cases, and 4 Assumptions
+  bullets clarifying scope (conversational view vs. the separate History feature,
+  responsive web vs. native app, visual specifics deferred to planning, admin-screen
+  coverage). No [NEEDS CLARIFICATION] markers introduced — reasonable defaults covered
+  every ambiguity encountered. Re-validated — all 16/16 checklist items still pass; no
+  regressions.
 </content>

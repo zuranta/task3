@@ -97,6 +97,28 @@ Each scenario maps to a spec.md user story / acceptance scenario.
    - Script 201 question submissions for one account within the same day → the 201st
      request returns `429` with the limit and reset time in the error message.
 
+7. **Design system & conversational Q&A (User Story 6, FR-029–034)**
+   - Navigate login → register → upload → chat → history (and, as an admin account,
+     admin-eval/admin-metrics) → confirm every screen shares the same typography,
+     spacing, and color palette (Tailwind/shadcn/ui tokens; research.md §13) — no screen
+     looks like a disconnected, one-off style.
+   - Ask a question and, while it is in flight, confirm: it appears immediately as its
+     own user message bubble; an animated typing indicator appears in the assistant's
+     slot; the conversation auto-scrolls to keep the latest message in view; the typing
+     indicator remains visible for the entire wait (do not let it disappear or freeze
+     before the answer arrives, per the near-15s edge case in spec.md); the indicator is
+     replaced by the complete answer message, with citations visually distinct from the
+     answer text (badges), once the response resolves.
+   - Trigger a slow/failing upload and a slow/failing question → confirm a visible
+     loading indicator during the wait and a clearly styled, human-readable error
+     message on failure (never raw JSON) in both the upload and chat features.
+   - View the documents list and the history list on a brand-new account → confirm a
+     distinct, clearly worded empty state in each, not a blank area or an error.
+   - Resize the browser (or use device emulation) to a mobile width (~375px) on every
+     screen, including a chat conversation with a long answer and multiple citations →
+     confirm content wraps/scrolls within its own message and no screen requires
+     horizontal scrolling or clips content/controls.
+
 ## Evaluation experiment (LangSmith)
 
 ```bash

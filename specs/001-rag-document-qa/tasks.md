@@ -26,10 +26,17 @@ surfaced by `/speckit-analyze` on the prior task list (Key Vault secret populati
 data-isolation unit tests beyond retrieval, and administrator-account provisioning) —
 each is marked below with the finding ID it addresses.
 
+**Amended (frontend polish)**: Phases 1–8 (User Stories 1–5) were already implemented
+and merged. This revision appends Phase 9 (User Story 6 — Tailwind/shadcn/ui design
+system, feature-folder restructuring, and the conversational chat UI) and Phase 10 (its
+Polish addendum), per the amended plan.md/research.md/data-model.md covering that story.
+No backend changes are required — US6 is frontend-only and consumes the existing
+`POST /queries` contract as-is.
+
 ## Format: `[ID] [P?] [Story] Description`
 
 - **[P]**: Can run in parallel (different files, no dependencies)
-- **[Story]**: Which user story this task belongs to (US1–US5)
+- **[Story]**: Which user story this task belongs to (US1–US6)
 - Exact file paths are included in every description
 
 ## Path Conventions
@@ -258,12 +265,87 @@ latency, token consumption, and error rate are all observable, broken down by st
 **Purpose**: Coverage gaps, hardening, and end-to-end local validation across all
 stories.
 
-- [ ] T096 [P] Fill remaining backend unit-test coverage for edge cases across services (empty/malformed inputs) in `backend/tests/unit/`
-- [ ] T097 [P] Fill remaining frontend Vitest coverage for `DocumentUpload`/`HistoryList`/`AdminDashboard` in `frontend/tests/` (`RegisterForm`/`LoginForm` were already covered in US1, `frontend/tests/components/`)
-- [ ] T098 Run the full `quickstart.md` local-validation scenario set end-to-end (including the Infrastructure section's `az deployment group create` step and manual scenarios 1–6)
-- [ ] T099 Security hardening pass: verify no failure path leaks internal details, cross-checked against FR-004/FR-009/FR-021
-- [ ] T100 Performance check: measure question-answer latency against the ≥95%-within-15s target (SC-011) with a representative document set, running locally against the real Azure AI Search/Azure OpenAI resources
-- [ ] T101 [P] Write `backend/README.md` and `frontend/README.md` covering local setup (uvicorn + Vite, `az login`), testing, and the current no-App-Service scope (linking to quickstart.md)
+- [X] T096 [P] Fill remaining backend unit-test coverage for edge cases across services (empty/malformed inputs) in `backend/tests/unit/` — added generation_service.py coverage (previously zero direct coverage anywhere), rate_limit_service.py rolling-window-reset edge case
+- [X] T097 [P] Fill remaining frontend Vitest coverage for `DocumentUpload`/`HistoryList`/`AdminDashboard` in `frontend/tests/` (`RegisterForm`/`LoginForm` were already covered in US1, `frontend/tests/components/`)
+- [X] T098 Run the full `quickstart.md` local-validation scenario set end-to-end (including the Infrastructure section's `az deployment group create` step and manual scenarios 1–6) — re-deployed infra/main.bicep live (validated the US5 roles.bicep/monitoring.bicep changes deploy cleanly); scenarios 1–5 driven live against the running app with real Azure OpenAI/Search; scenario 6 (rate limiting) verified via the existing automated integration test rather than 201 live LLM calls. Surfaced a real, reproducible finding: Azure AI Search's indexing lag means a question asked immediately after a document reaches `status: ready` can occasionally miss content that becomes searchable moments later — documented in backend/README.md, not fixed (a design decision, not a Phase 8 task)
+- [X] T099 Security hardening pass: verify no failure path leaks internal details, cross-checked against FR-004/FR-009/FR-021 — audited every raise site in backend/src (all use curated static messages, no raw exception interpolation); added a regression test proving an unexpected exception's message never reaches the client
+- [X] T100 Performance check: measure question-answer latency against the ≥95%-within-15s target (SC-011) with a representative document set, running locally against the real Azure AI Search/Azure OpenAI resources — 12 real Q&A calls against a multi-fact document, 100% within 15s (p50 4.4s, max 14.1s)
+- [X] T101 [P] Write `backend/README.md` and `frontend/README.md` covering local setup (uvicorn + Vite, `az login`), testing, and the current no-App-Service scope (linking to quickstart.md)
+
+---
+
+## Phase 9: User Story 6 - Experience a Polished, Conversational Q&A Interface (Priority: P2)
+
+**Goal**: Every screen shares one Tailwind/shadcn/ui design system (color palette,
+spacing, typography); the frontend is restructured by feature
+(`auth/`, `upload/`, `query/`, `chat/`, `history/`, `admin/`) sharing only
+`components/ui/` and `lib/utils.ts`; the live Q&A screen becomes a scrolling chat with
+distinct user/assistant bubbles, an animated typing indicator while an answer
+generates, and visually distinct citations; every screen shows a clear loading/empty/
+error state and remains usable at mobile widths.
+
+**Independent Test**: Navigate every screen and confirm one consistent visual style;
+trigger a slow upload/question, an empty documents/history list, and a failed request
+and confirm each shows its own clearly styled state; ask a question and confirm it
+appears as a user bubble immediately, a typing indicator follows, then a distinct answer
+bubble with visually distinguished citations replaces it — all usable at both desktop
+and mobile viewport widths.
+
+### Tests for User Story 6
+
+> Write these tests FIRST; confirm they FAIL before implementation.
+
+- [ ] T102 [P] [US6] Component test: `ChatWindow` renders user/assistant bubbles in submission order and auto-scrolls to the latest message in `frontend/tests/features/chat/ChatWindow.test.tsx`
+- [ ] T103 [P] [US6] Component/hook test: submitting a question appends a pending assistant placeholder that renders `TypingIndicator`, then the placeholder updates in place to the complete answer with citations on success or a styled error bubble on failure, in `frontend/tests/features/chat/useConversation.test.tsx`
+- [ ] T104 [P] [US6] Component test: `ChatBubble` renders citation badges with a visually distinct style (different token/class) from the answer body text in `frontend/tests/features/chat/ChatBubble.test.tsx`
+- [ ] T105 [P] [US6] Component tests: `DocumentUpload` and `HistoryList` each render a loading indicator while pending, a distinct empty-state message with zero items, and a styled (non-raw-JSON) error message on failure, in `frontend/tests/features/upload/DocumentUpload.test.tsx` and `frontend/tests/features/history/HistoryList.test.tsx`
+
+### Implementation for User Story 6
+
+**Design system foundation**
+
+- [ ] T106 [P] Install and configure Tailwind CSS (`postcss.config.js`, `tailwind.config.ts` with the color/spacing/typography tokens from research.md §13) and the shadcn/ui CLI (`components.json`) in `frontend/`
+- [ ] T107 [P] Define the CSS custom-property design tokens — `background`/`foreground`/`card`/`primary`/`primary-foreground`/`secondary`/`muted`/`muted-foreground`/`accent`/`destructive`/`border`/`input`/`ring`, plus the `citation`/`citation-foreground` pair for FR-031 — in `frontend/src/index.css` (depends on T106)
+- [ ] T108 [P] Add the `cn()` class-merge helper in `frontend/src/lib/utils.ts`
+- [ ] T109 [P] Generate the shadcn/ui primitives — button, input, textarea, label, card, alert, badge, avatar, skeleton, separator, dialog, table, form — into `frontend/src/components/ui/` (depends on T106, T107)
+
+**Restructure existing screens into feature folders**
+
+- [ ] T110 [US6] Move `LoginForm.tsx`, `RegisterForm.tsx`, `AuthProvider.tsx`, `auth.ts`, `Login.tsx`, `Register.tsx` into `frontend/src/features/auth/`, restyled with shadcn/ui `Card`/`Input`/`Label`/`Button`/`Alert` primitives (depends on T109)
+- [ ] T111 [US6] Move `DocumentUpload.tsx`, `documents.ts` into `frontend/src/features/upload/`, restyled with shadcn/ui primitives, adding a `Skeleton` loading state and an explicit empty-state message when no documents exist (FR-030) (depends on T109)
+- [ ] T112 [US6] Move `queries.ts` (question submission + history fetch calls, shared `Answer`/`Citation` types) into `frontend/src/features/query/` (depends on T109)
+- [ ] T113 [US6] Move `HistoryList.tsx` and `History.tsx` (as `HistoryPage.tsx`) into `frontend/src/features/history/`, restyled with shadcn/ui primitives; replace the old `AnswerCard.tsx`/`CitationList.tsx` detail-view rendering with `CitationBadge` (T127) so History's citation display matches chat's, then delete `AnswerCard.tsx`/`CitationList.tsx`; add an explicit empty-state message (FR-019, FR-030, FR-031) (depends on T109, T112, T127)
+- [ ] T114 [US6] Move `AdminDashboard.tsx`, `AdminEval.tsx`, `AdminMetrics.tsx`, `adminEval.ts`, `adminMetrics.ts` into `frontend/src/features/admin/`, restyled with shadcn/ui `Table`/`Card`/`Badge` primitives (depends on T109)
+
+**Chat conversation feature**
+
+- [ ] T127 [P] [US6] Extract a shared `CitationBadge` component (citation text + visually-distinct badge styling per FR-031, with a `source_removed` indicator) in `frontend/src/features/query/CitationBadge.tsx`, used by both `ChatBubble` and the History detail view (depends on T109, T112)
+- [ ] T115 [US6] Implement the `useConversation` hook — message array state (`id`/`role`/`content`/`citations`/`timestamp`/`status` per data-model.md's `ChatMessage` view model); appends a user message plus a pending assistant placeholder on submit, then updates the placeholder in place to `complete` (with `content`/`citations`) or `error` once `POST /queries` resolves — in `frontend/src/features/chat/useConversation.ts` (depends on T112)
+- [ ] T116 [P] [US6] Implement the animated `TypingIndicator` component in `frontend/src/features/chat/TypingIndicator.tsx` (depends on T109)
+- [ ] T117 [P] [US6] Implement `ChatBubble` — distinct user/assistant styling, citations rendered via `CitationBadge` (T127), a distinct styled state for `status: error` (FR-030/FR-034), content that wraps/scrolls within the bubble rather than overflowing on narrow widths — in `frontend/src/features/chat/ChatBubble.tsx` (depends on T109, T127)
+- [ ] T118 [US6] Implement `ChatWindow` — scrolling message list composing `ChatBubble`/`TypingIndicator`, auto-scrolling to the latest message via a ref + effect keyed on the message array (FR-033) — in `frontend/src/features/chat/ChatWindow.tsx` (depends on T116, T117)
+- [ ] T119 [P] [US6] Implement `ChatInput`, restyled with shadcn/ui `Textarea`/`Button` and disabled while a message is pending, in `frontend/src/features/chat/ChatInput.tsx` (depends on T109)
+- [ ] T120 [US6] Replace `Workspace.tsx`'s static request/response layout with `ChatPage` (composes `ChatWindow` + `ChatInput` + `useConversation`, plus `DocumentUpload` from `features/upload/`) in `frontend/src/features/chat/ChatPage.tsx`; remove the old `frontend/src/pages/Workspace.tsx` (depends on T115, T118, T119, T111)
+
+**Wiring & cross-screen consistency**
+
+- [ ] T121 [US6] Update route wiring in `frontend/src/App.tsx` to import each page from its new `features/*` location (depends on T110, T111, T113, T114, T120)
+- [ ] T122 [P] [US6] Apply the shared typography/spacing scale (research.md §13) to every remaining screen shell — page titles, section headings, body/meta text — so all screens share one visual language (FR-029, SC-013) (depends on T110, T111, T113, T114, T120)
+- [ ] T123 [P] [US6] Add responsive layout classes (mobile-first, no required horizontal scroll, wrapping message/citation content) across `features/auth/`, `features/chat/`, `features/upload/`, `features/history/`, `features/admin/` (FR-032, SC-016) (depends on T122)
+
+**Checkpoint**: User Story 6 is independently functional and testable — all six user
+stories are now complete.
+
+---
+
+## Phase 10: Polish (User Story 6 additions)
+
+**Purpose**: Cleanup and end-to-end validation specific to this amendment, on top of
+Phase 8's existing coverage.
+
+- [ ] T124 [P] Remove the now-empty `frontend/src/components/` (non-`ui/`), `frontend/src/pages/`, and `frontend/src/services/` directories once every file has moved into a `features/` folder (depends on T121)
+- [ ] T125 Run quickstart.md manual validation scenario 7 (design-system consistency across every screen, the chat typing-indicator/auto-scroll/citation-badge sequence, and mobile-width usability) end-to-end (depends on T121, T123)
+- [ ] T126 [P] Update `frontend/README.md` to describe the Tailwind/shadcn/ui design system and the feature-folder structure (depends on T121)
 
 ---
 
@@ -287,6 +369,11 @@ stories.
 - **User Story 5 (Phase 7)**: Depends on Foundational's telemetry bootstrap (T023);
   independent of all other stories' data model.
 - **Polish (Phase 8)**: Depends on all desired user stories being complete.
+- **User Story 6 (Phase 9)**: Depends on Foundational; functionally independent of
+  US2–US5's backend logic (it only consumes the existing `POST /queries` contract — no
+  backend changes), but restyles and relocates US1–US5's existing frontend components,
+  so it should be built after those stories' frontend pieces exist.
+- **Polish for US6 (Phase 10)**: Depends on Phase 9 being complete.
 
 ### Within Each User Story
 
@@ -303,6 +390,10 @@ stories.
   each other and with US1–US3.
 - All `[P]`-marked tests within a story can run in parallel with each other.
 - All `[P]`-marked model/schema tasks within a story can run in parallel.
+- Within US6, T106–T109 (design-system foundation) run in parallel; once T109 completes,
+  T110, T111, T112, T114 (per-feature restructuring) and T127 (shared `CitationBadge`)
+  can run in parallel with each other — T113 (History) waits on T127; T116, T119 can run
+  in parallel with T127 before T117 (which needs T127) and T118 compose them.
 
 ---
 
@@ -326,6 +417,31 @@ Task: "Unit tests for the zero-citation groundedness guard in backend/tests/unit
 # Launch US2 models/schemas together:
 Task: "Define Document/Query/Answer/Citation/RateLimitCounter ORM models in backend/src/models/db.py"
 Task: "Add Document/QueryRequest/QueryRecord/Citation/ResponseMetadata/Answer schemas in backend/src/models/schemas.py"
+```
+
+---
+
+## Parallel Example: User Story 6
+
+```bash
+# Design-system foundation (after Foundational; no story dependency):
+Task: "Install/configure Tailwind + shadcn/ui CLI in frontend/"
+Task: "Define CSS custom-property design tokens in frontend/src/index.css"
+Task: "Add cn() helper in frontend/src/lib/utils.ts"
+Task: "Generate shadcn/ui primitives into frontend/src/components/ui/"
+
+# Once the primitives exist, restructure each existing feature area in parallel:
+Task: "Move auth components/service into frontend/src/features/auth/"
+Task: "Move upload component/service into frontend/src/features/upload/"
+Task: "Move query service into frontend/src/features/query/"
+Task: "Move admin components/services into frontend/src/features/admin/"
+Task: "Extract shared CitationBadge into frontend/src/features/query/CitationBadge.tsx"
+
+# History waits on CitationBadge; chat sub-components before ChatWindow composes them:
+Task: "Move history list/page into frontend/src/features/history/, using CitationBadge"
+Task: "Implement TypingIndicator in frontend/src/features/chat/TypingIndicator.tsx"
+Task: "Implement ChatInput in frontend/src/features/chat/ChatInput.tsx"
+Task: "Implement ChatBubble in frontend/src/features/chat/ChatBubble.tsx, using CitationBadge"
 ```
 
 ---
@@ -355,6 +471,11 @@ Task: "Add Document/QueryRequest/QueryRecord/Citation/ResponseMetadata/Answer sc
 6. Add US5 → test independently → demo (ops visibility, admin-only).
 7. Polish → full quickstart.md pass. Azure App Service deployment is a future
    amendment, not part of this task list.
+8. Add US6 → design-system foundation (T106–T109) → restructure each existing
+   feature's screens onto it (T110–T114) → build the chat conversation (T115–T120) →
+   wire routes and finish cross-screen consistency/responsiveness (T121–T123) → test
+   independently → Polish (Phase 10): remove the now-empty old folders, run quickstart
+   scenario 7, update `frontend/README.md`.
 
 Each stage corresponds to constitution Principle V: one reviewable PR per stage, CI
 green (Principle IV) before merge, project left in a working state throughout.

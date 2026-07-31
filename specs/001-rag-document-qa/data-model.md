@@ -166,4 +166,32 @@ named as an entity in spec.md, but required by it.
 per research.md §10 — **not** a SQLite table. FR-027/028 are satisfied by querying
 Application Insights (via its API/Log Analytics) filtered by request stage and time
 window, rather than a bespoke app-database table.
+
+## Frontend View Models (not persisted, User Story 6)
+
+These exist only in browser memory for the lifetime of the chat screen; they are
+rendering projections of the entities above, not a new system of record (research.md §15).
+
+### ChatMessage
+
+**Storage**: React component/session state in `features/chat/` (e.g., via `useReducer` or
+a `useConversation` hook) — never sent to, or read from, the backend as its own resource.
+
+| Field | Type | Rules |
+|---|---|---|
+| id | string | client-generated (e.g., a counter or crypto random id); stable for React list keys |
+| role | enum(`user`, `assistant`) | which side of the conversation the bubble renders as |
+| content | string | the question text (`role: user`) or `answer_text` (`role: assistant`) |
+| citations | Citation[], optional | only present on `role: assistant`; same shape as the `Citation` entity above, sourced verbatim from the `Answer` returned by `POST /queries` |
+| timestamp | string (ISO datetime) | set client-side when the message is appended; for `role: assistant`, this is when the answer was appended (not the request start), so it's close to but not identical to the persisted `Answer.created_at` |
+| status | enum(`pending`, `complete`, `error`) | `pending` only ever applies to the trailing `role: assistant` placeholder and is what renders the animated typing indicator (FR-034); `error` renders a styled error bubble (FR-030) instead of an answer |
+
+**Relationships**: none (no FK) — a `ChatMessage` is populated from, but does not
+reference, a `Query`/`Answer`/`Citation` row. The authoritative, persisted record of the
+same exchange is the `Query`/`Answer`/`Citation` rows above, independently retrievable
+later via the History feature (User Story 3, FR-019/FR-020).
+
+**Validation**: At most one `ChatMessage` with `status: pending` may exist at a time
+(the trailing assistant placeholder for the in-flight question) — a new question is not
+submittable while one is pending, since `POST /queries` answers one question at a time.
 </content>
