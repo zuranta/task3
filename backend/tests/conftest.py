@@ -80,6 +80,25 @@ class _FakeSearchIndex:
             for p in matches
         ]
 
+    async def list_passages(self, *, user_id, document_id) -> list[Passage]:
+        matches = [
+            p
+            for p in self.passages.values()
+            if p["document_id"] == document_id
+            and p["user_id"] == user_id
+            and p["status"] == "active"
+        ]
+        matches.sort(key=lambda p: p["id"])
+        return [
+            Passage(
+                id=p["id"],
+                document_id=p["document_id"],
+                location_label=p["location_label"],
+                content=p["content"],
+            )
+            for p in matches
+        ]
+
 
 @pytest.fixture(autouse=True)
 def fake_search_index(monkeypatch):
@@ -91,6 +110,7 @@ def fake_search_index(monkeypatch):
         retrieval_service, "delete_document_passages", fake.delete_document_passages
     )
     monkeypatch.setattr(retrieval_service, "search", fake.search)
+    monkeypatch.setattr(retrieval_service, "list_passages", fake.list_passages)
     return fake
 
 

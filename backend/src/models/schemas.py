@@ -52,6 +52,11 @@ class DocumentOut(BaseModel):
     uploaded_at: datetime
 
 
+class PassageSummary(BaseModel):
+    location_label: str
+    content: str
+
+
 class QueryRequest(BaseModel):
     question: str = Field(min_length=1)
 
@@ -61,6 +66,7 @@ class Citation(BaseModel):
     document_filename: str
     location_label: str
     source_removed: bool
+    passage_content: str
 
 
 class ResponseMetadata(BaseModel):

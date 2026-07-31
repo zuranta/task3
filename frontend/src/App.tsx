@@ -1,12 +1,12 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 
-import { AdminEval } from "./pages/AdminEval";
-import { AdminMetrics } from "./pages/AdminMetrics";
-import { History } from "./pages/History";
-import { Login } from "./pages/Login";
-import { Register } from "./pages/Register";
-import { Workspace } from "./pages/Workspace";
-import { useAuth } from "./services/auth";
+import { useAuth } from "./features/auth/auth";
+import { LoginPage } from "./features/auth/LoginPage";
+import { RegisterPage } from "./features/auth/RegisterPage";
+import { AdminEvalPage } from "./features/admin/AdminEvalPage";
+import { AdminMetricsPage } from "./features/admin/AdminMetricsPage";
+import { ChatPage } from "./features/chat/ChatPage";
+import { HistoryPage } from "./features/history/HistoryPage";
 
 function ProtectedRoute({ children }: { children: JSX.Element }) {
   const { isAuthenticated } = useAuth();
@@ -31,7 +31,7 @@ export function App() {
         path="/login"
         element={
           <PublicOnlyRoute>
-            <Login />
+            <LoginPage />
           </PublicOnlyRoute>
         }
       />
@@ -39,7 +39,7 @@ export function App() {
         path="/register"
         element={
           <PublicOnlyRoute>
-            <Register />
+            <RegisterPage />
           </PublicOnlyRoute>
         }
       />
@@ -47,7 +47,7 @@ export function App() {
         path="/"
         element={
           <ProtectedRoute>
-            <Workspace />
+            <ChatPage />
           </ProtectedRoute>
         }
       />
@@ -55,7 +55,7 @@ export function App() {
         path="/history"
         element={
           <ProtectedRoute>
-            <History />
+            <HistoryPage />
           </ProtectedRoute>
         }
       />
@@ -63,7 +63,7 @@ export function App() {
         path="/admin/eval"
         element={
           <AdminRoute>
-            <AdminEval />
+            <AdminEvalPage />
           </AdminRoute>
         }
       />
@@ -71,7 +71,7 @@ export function App() {
         path="/admin/metrics"
         element={
           <AdminRoute>
-            <AdminMetrics />
+            <AdminMetricsPage />
           </AdminRoute>
         }
       />

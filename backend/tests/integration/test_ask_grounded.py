@@ -32,6 +32,7 @@ async def test_upload_then_ask_returns_structured_cited_answer(client, register_
     assert len(answer["citations"]) > 0
     assert answer["citations"][0]["document_id"] == document_id
     assert answer["citations"][0]["source_removed"] is False
+    assert answer["citations"][0]["passage_content"]
     metadata = answer["metadata"]
     assert metadata["prompt_tokens"] > 0
     assert metadata["total_tokens"] == metadata["prompt_tokens"] + metadata["completion_tokens"]

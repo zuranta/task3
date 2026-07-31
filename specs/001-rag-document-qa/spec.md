@@ -6,7 +6,7 @@
 
 **Status**: Draft
 
-**Input**: User description: "Build a RAG (retrieval-augmented generation) application that lets a user upload documents or ask questions about previously uploaded content. The system should retrieve relevant source material for a given question, generate an answer grounded in that material, and include citations back to the specific source documents used. Responses must be returned in a validated, structured format, not free text. Results should be saved so a user can revisit past queries and answers. The system must handle errors gracefully (upload failures, retrieval failures, generation failures) with clear, non-leaking error messages. Separately, the system's behavior must be measurable: define what a \"correct,\" \"relevant,\" and \"grounded\" (non-hallucinated) response looks like, maintain a dataset of example questions with expected answers, and support comparing two versions of the system against that dataset to determine which performs better. The system must also track operational health in production: response latency, token consumption, and error rates." Amendment: "The system is multi-user — each user has their own account and can only see their own uploaded documents, saved queries, and results. Users must be able to register and log in using either their email or username, plus a password."
+**Input**: User description: "Build a RAG (retrieval-augmented generation) application that lets a user upload documents or ask questions about previously uploaded content. The system should retrieve relevant source material for a given question, generate an answer grounded in that material, and include citations back to the specific source documents used. Responses must be returned in a validated, structured format, not free text. Results should be saved so a user can revisit past queries and answers. The system must handle errors gracefully (upload failures, retrieval failures, generation failures) with clear, non-leaking error messages. Separately, the system's behavior must be measurable: define what a \"correct,\" \"relevant,\" and \"grounded\" (non-hallucinated) response looks like, maintain a dataset of example questions with expected answers, and support comparing two versions of the system against that dataset to determine which performs better. The system must also track operational health in production: response latency, token consumption, and error rates." Amendment: "The system is multi-user — each user has their own account and can only see their own uploaded documents, saved queries, and results. Users must be able to register and log in using either their email or username, plus a password." Amendment (visual design): "The frontend currently has no visual design and must have a coherent, professional look applied consistently across every screen, with clear visual feedback for loading, empty, and error states, citations visually distinguished from answer text, and a layout usable on both desktop and mobile widths. The question-and-answer screen must be redesigned as a chatbot-style conversation — scrolling message bubbles distinguishing the user's questions from the system's answers, with a typing/thinking indicator while a response is generating — replacing the current static request/response layout."
 
 ## Clarifications
 
@@ -197,6 +197,59 @@ recorded and retrievable as observable metrics reflecting that traffic.
 
 ---
 
+### User Story 6 - Experience a Polished, Conversational Q&A Interface (Priority: P2)
+
+Every screen a user encounters — registering, logging in, uploading documents, asking
+questions, reviewing results, and browsing history — presents a single, coherent visual
+design rather than unstyled or inconsistent pages, and clearly communicates what is
+happening at every moment (loading, empty, or error) without ever showing raw technical
+output. Asking questions and receiving answers happens in a conversational interface:
+the user's own questions and the system's answers appear as a scrolling sequence of
+visually distinct messages, with a visible "thinking" indicator while an answer is being
+generated, rather than a static one-question-at-a-time form.
+
+**Why this priority**: The underlying capabilities (accounts, grounded Q&A, history)
+already work by the time this story is addressed — this story is about making that
+value legible, trustworthy, and pleasant to use, which matters for real adoption but
+does not gate any of the functionality it presents. It ranks alongside history and
+evaluation rather than above the core Q&A loop itself.
+
+**Independent Test**: Can be fully tested by navigating every screen and confirming a
+single consistent visual style; by triggering a slow upload/question, an empty
+documents/history list, and a failed request and confirming each shows its own clearly
+styled state (loading, empty, error) with no raw/unstyled technical output visible; and
+by asking a question and confirming it appears as a distinct user message immediately,
+followed by a visible thinking indicator, then a distinct answer message, all in a
+scrolling conversation view that remains usable at both a typical desktop and a typical
+mobile viewport width.
+
+**Acceptance Scenarios**:
+
+1. **Given** a user moves between the login, registration, upload, question/answer, and
+   history screens, **When** they view each screen, **Then** all screens share the same
+   typography, spacing, and color scheme rather than looking like disconnected pages.
+2. **Given** a user submits a question or uploads a document, **When** the request is
+   still being processed, **Then** the system shows a visible loading/progress
+   indicator rather than an unresponsive or blank screen.
+3. **Given** a user has no uploaded documents or no past questions yet, **When** they
+   view the relevant screen, **Then** the system shows a distinct, clearly worded empty
+   state rather than a blank area or an error.
+4. **Given** a request fails for any reason, **When** the failure is shown to the user,
+   **Then** it appears as a clearly styled, human-readable message rather than raw or
+   unstyled technical output (e.g., raw JSON).
+5. **Given** an answer includes one or more citations, **When** the user views it,
+   **Then** the citations are visually distinguishable from the main answer text they
+   support.
+6. **Given** a user asks a question, **When** the answer is being generated, **Then**
+   their question immediately appears as its own message in a scrolling conversation,
+   a visible "thinking" indicator appears while the answer is generated, and the
+   indicator is replaced by the answer as its own, visually distinct message once ready.
+7. **Given** a user views the application on a narrow (mobile-width) screen instead of a
+   desktop-width screen, **When** they use any screen, **Then** all content and controls
+   remain usable without being cut off or requiring horizontal scrolling to reach.
+
+---
+
 ### Edge Cases
 
 - What happens when a registration attempt reuses an email or username already
@@ -236,6 +289,13 @@ recorded and retrievable as observable metrics reflecting that traffic.
   answers? The document MUST stop being available for future retrieval, but existing
   answers and citations that referenced it MUST remain visible in history, marked as
   referencing a removed source.
+- What happens when an answer takes close to the maximum expected time to generate?
+  The "thinking" indicator MUST remain visible for the entire wait rather than
+  disappearing prematurely or appearing frozen, so the user can tell the system is
+  still working rather than stuck.
+- What happens when an answer or its citations are long relative to a narrow
+  (mobile-width) screen? The content MUST wrap and scroll within its own message
+  rather than being clipped, overflowing the screen, or breaking the surrounding layout.
 
 ## Requirements *(mandatory)*
 
@@ -327,6 +387,26 @@ recorded and retrievable as observable metrics reflecting that traffic.
 - **FR-028**: System MUST make latency, token consumption, and error-rate metrics
   observable for a given recent time window, broken down by request stage (upload,
   retrieval, generation).
+- **FR-029**: System MUST present a single, coherent visual design — consistent
+  typography, spacing, and color scheme — across every screen (login, register,
+  upload, question/answer, history).
+- **FR-030**: System MUST show a visible loading/progress indicator while a document
+  upload or question submission is being processed, MUST show a distinct empty-state
+  message when no documents or history entries exist, and MUST present every failure
+  as a clearly styled, human-readable message rather than raw or unstyled technical
+  output (e.g., raw JSON).
+- **FR-031**: System MUST visually distinguish an answer's citations from the main
+  answer text they support.
+- **FR-032**: System MUST remain fully usable, with no content or controls cut off or
+  requiring horizontal scrolling to reach, at both desktop and mobile (narrow) viewport
+  widths.
+- **FR-033**: System MUST present the question-and-answer interaction as a
+  chronological, scrolling sequence of messages, with the user's own questions and the
+  system's answers rendered as visually distinct message types, rather than a static
+  one-question-at-a-time layout.
+- **FR-034**: System MUST show a visible "thinking" indicator within the conversation
+  while an answer is being generated, replacing it with the completed answer message
+  (or, per FR-030, a styled error message) once generation finishes.
 
 ### Key Entities
 
@@ -395,6 +475,18 @@ recorded and retrievable as observable metrics reflecting that traffic.
   submission.
 - **SC-012**: 100% of requests that exceed a user's upload or question rate limit are
   rejected with a clear, specific error rather than being processed.
+- **SC-013**: 100% of screens (login, register, upload, question/answer, history) use
+  the same typography, spacing, and color scheme, with zero screens presenting an
+  unstyled or visually inconsistent one-off appearance.
+- **SC-014**: 100% of loading, empty, and error states are shown with a distinct,
+  clearly styled indicator or message; 0% of failed requests display raw or unstyled
+  technical output (e.g., raw JSON) to the user.
+- **SC-015**: A new user can, without explanation, correctly tell their own questions
+  apart from the system's answers in the conversation view, and can identify when the
+  system is still generating a response versus when it has finished.
+- **SC-016**: The application remains fully usable — no cut-off content, no required
+  horizontal scrolling of primary content — at both a typical desktop viewport width
+  (e.g., 1280px) and a typical mobile viewport width (e.g., 375px).
 
 ## Assumptions
 
@@ -424,4 +516,21 @@ recorded and retrievable as observable metrics reflecting that traffic.
 - Data retention for uploaded documents, query history, and operational metrics follows
   standard industry practice (retained until the user deletes it or an administrator
   purges it); no specific regulatory retention period was indicated.
+- The conversational message view (User Story 6) is a redesign of how the live
+  question/answer screen presents the current session's back-and-forth; it does not
+  change the separate History feature (User Story 3) or its underlying data — a user's
+  past questions and answers are still requested, structured, and revisited exactly as
+  User Story 3 already defines. The two remain distinct screens, matching the request's
+  own listing of "query" and "results/history" as separate screens.
+- "Usable on mobile widths" means a responsive web layout (the same web application
+  adapting to a narrower viewport), not a separate native mobile app.
+- The specific visual design choices (exact color palette, font family, spacing scale,
+  component styling) are implementation details left to the planning phase; this
+  specification requires that a single design be applied consistently, not any
+  particular look.
+- Admin-only screens (comparison-run dataset/results, operational metrics) are covered
+  by the same consistent visual design and responsive-layout requirements as the
+  end-user screens; the conversational message redesign (FR-033, FR-034) applies only to
+  the end-user question/answer screen, since the admin screens are not conversational
+  in nature.
 </content>

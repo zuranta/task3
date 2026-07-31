@@ -167,3 +167,18 @@ async def delete_document(db: AsyncSession, *, user_id: str, document_id: str) -
     await retrieval_service.delete_document_passages(document_id)
     document.status = DocumentStatus.deleted
     await db.commit()
+
+
+async def get_document_passages(
+    db: AsyncSession, *, user_id: str, document_id: str
+) -> list[retrieval_service.Passage]:
+    """The indexed passages for one of the caller's own documents (the "view
+    the source" affordance) -- same user-scoped 404 pattern as delete_document."""
+    result = await db.execute(
+        select(Document).where(Document.id == document_id, Document.user_id == user_id)
+    )
+    document = result.scalar_one_or_none()
+    if document is None or document.status == DocumentStatus.deleted:
+        raise NotFoundError("Document not found.")
+
+    return await retrieval_service.list_passages(user_id=user_id, document_id=document_id)

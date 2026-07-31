@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.core.db import get_db
 from src.core.security import get_current_user
 from src.models.db import User
-from src.models.schemas import DocumentOut
+from src.models.schemas import DocumentOut, PassageSummary
 from src.services import document_service
 
 router = APIRouter(prefix="/api/v1/documents", tags=["documents"])
@@ -54,3 +54,15 @@ async def delete_document(
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> None:
     await document_service.delete_document(db, user_id=user.id, document_id=document_id)
+
+
+@router.get("/{document_id}/passages", response_model=list[PassageSummary])
+async def list_document_passages(
+    document_id: str,
+    user: Annotated[User, Depends(get_current_user)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> list[PassageSummary]:
+    passages = await document_service.get_document_passages(
+        db, user_id=user.id, document_id=document_id
+    )
+    return [PassageSummary(location_label=p.location_label, content=p.content) for p in passages]

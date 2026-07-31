@@ -66,7 +66,7 @@ components:
 
     Citation:
       type: object
-      required: [document_id, document_filename, location_label, source_removed]
+      required: [document_id, document_filename, location_label, source_removed, passage_content]
       properties:
         document_id: { type: string }
         document_filename: { type: string }
@@ -75,6 +75,23 @@ components:
           description: e.g., page/section/passage locator within the source document.
         source_removed:
           type: boolean
+        passage_content:
+          type: string
+          description: >
+            The exact text of the cited passage, snapshotted at answer time
+            (not re-fetched from the search index), so it stays available and
+            unchanged even if the document is later deleted or re-indexed.
+
+    PassageSummary:
+      type: object
+      required: [location_label, content]
+      properties:
+        location_label:
+          type: string
+          description: e.g., page/section locator within the source document.
+        content:
+          type: string
+          description: The chunk's extracted text, as currently indexed for retrieval.
           description: True if the cited document has since been deleted (FR-010).
 
     ResponseMetadata:
@@ -281,6 +298,34 @@ paths:
           description: >
             Not found or not owned by the caller (indistinguishable, per the
             cross-account edge case in spec.md).
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  /documents/{documentId}/passages:
+    get:
+      summary: >
+        List the indexed passages for one of the caller's own documents, so
+        the caller can browse what a document's content was chunked into
+        (the "view the source" affordance behind clicking a document).
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: documentId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: The document's passages, in their original order.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/PassageSummary" }
+        "404":
+          description: >
+            Not found, not owned by the caller, or deleted (a deleted
+            document's passages are no longer indexed, FR-010).
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Error" }

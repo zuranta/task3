@@ -20,6 +20,13 @@ SQLite via SQLAlchemy. An administrator/evaluator role (separate from regular us
 LangSmith-based experiments comparing two system versions against a benchmark dataset
 using automated LLM-as-judge evaluators for correctness/relevance/groundedness, and views
 Application Insights-backed operational metrics (latency, token consumption, error rate).
+The frontend is styled with Tailwind CSS and shadcn/ui primitives on a single design
+system (color palette, spacing scale, typography), organized by feature
+(`auth/`, `upload/`, `query/`, `chat/`, `history/`, `admin/`) rather than by technical
+layer; the live question/answer screen is a scrolling chat conversation held as
+client-side message state (role, content, citations, timestamp) with an animated typing
+indicator that renders the full structured answer at once once it arrives (the backend
+has no streaming endpoint this iteration — see research.md §13–15).
 
 **This iteration's scope is local-only**: the application runs and is fully testable via
 `uvicorn` against real Azure dependencies, authenticated with the developer's own
@@ -39,7 +46,9 @@ a future amendment; nothing below assumes App Service exists.
 `aiosqlite`, Alembic, `azure-identity` (`DefaultAzureCredential`), `openai` (Azure OpenAI
 client, Structured Outputs), `azure-search-documents`, `bcrypt`, `pyjwt`, `langsmith`,
 `azure-monitor-opentelemetry`. Frontend — React 18, Vite, React Router, a thin fetch/axios
-API client.
+API client, Tailwind CSS (+ `postcss`, `autoprefixer`), shadcn/ui-generated primitives in
+`components/ui/` (bringing in Radix UI primitives, `class-variance-authority`,
+`tailwind-merge`, `clsx`, `lucide-react` — see research.md §13).
 
 **Storage**: SQLite (file-based, via SQLAlchemy + Alembic migrations) for relational
 metadata — users, document metadata, queries, answers, citations, comparison-run
@@ -48,8 +57,13 @@ AI Search, not SQLite; raw uploaded bytes are processed in-memory during ingesti
 are not retained after indexing (see research.md).
 
 **Testing**: Backend — pytest, pytest-asyncio, httpx (FastAPI `TestClient`/`ASGITransport`).
-Frontend — Vitest + React Testing Library. Both cover success paths, failure paths, and
-empty/malformed-input cases per constitution Principle III.
+Frontend — Vitest + React Testing Library, covering each feature folder's success,
+failure, and empty states, plus the chat conversation's message-state transitions
+(`pending` → `complete`/`error`, auto-scroll trigger) per research.md §15. Both cover
+success paths, failure paths, and empty/malformed-input cases per constitution
+Principle III. Visual/responsive aspects (design-system consistency, mobile-width
+layout) are validated manually per quickstart.md, since Vitest/RTL do not render actual
+CSS layout.
 
 **Target Platform**: Local development machine running the FastAPI backend via
 `uvicorn` and the React dev server (or its built static output served by FastAPI), for
@@ -120,6 +134,17 @@ accepted local-development path explicitly. Key Vault and Application Insights a
 provisioned now (they don't require App Service to exist), so Principle II and
 FR-027/028 remain satisfied rather than deferred. All gates remain PASS.
 
+**Amendment re-check (Tailwind/shadcn/ui design system, feature-folder frontend
+structure, chat conversation UI)**: No new violation. Principle I (Code Quality) is
+reinforced, not weakened — shadcn/ui primitives live in `components/ui/` as ordinary,
+lint/format-checked project source (Principle IV's ESLint/Prettier gate already covers
+`.tsx`), and feature folders replace duplicated one-off styling with a single shared set
+of primitives. No new secret or credential is introduced (Principle II n/a — Tailwind/
+shadcn/ui/Radix are build-time and UI-only dependencies with no backend or Azure
+surface). Principle III's frontend testing bar (Vitest + RTL, success/failure/empty
+cases) is unchanged and now explicitly covers the chat message-state transitions
+(research.md §15). All gates remain PASS.
+
 ## Project Structure
 
 ### Documentation (this feature)
@@ -171,13 +196,30 @@ backend/
     └── unit/                   # service-level unit tests (incl. empty/malformed inputs)
 
 frontend/
+├── components.json             # shadcn/ui CLI config (generates into components/ui/)
+├── tailwind.config.ts          # design tokens: color palette, spacing, typography scale
 ├── src/
-│   ├── components/            # DocumentUpload, ChatInput, AnswerCard, CitationList,
-│   │                          #   HistoryList, LoginForm, RegisterForm, AdminDashboard
-│   ├── pages/                 # Login, Register, Workspace, History, AdminEval, AdminMetrics
-│   ├── services/               # api client (attaches JWT), auth context
+│   ├── components/
+│   │   └── ui/                 # shadcn/ui-generated primitives only: button, input,
+│   │                          #   textarea, label, card, alert, badge, avatar, skeleton,
+│   │                          #   separator, dialog, table, form — the ONLY place a
+│   │                          #   styled primitive is defined (research.md §13/14)
+│   ├── lib/
+│   │   └── utils.ts            # cn() class-merge helper (shadcn convention)
+│   ├── features/
+│   │   ├── auth/                # LoginForm, RegisterForm, AuthProvider, auth.ts, pages
+│   │   ├── upload/               # DocumentUpload, documents.ts, page
+│   │   ├── query/                 # queries.ts (submit question, fetch one/history),
+│   │   │                          #   shared Answer/Citation types
+│   │   ├── chat/                  # ChatWindow (scrolling list + auto-scroll), ChatBubble,
+│   │   │                          #   TypingIndicator, ChatInput, useConversation
+│   │   │                          #   (message[] state — research.md §15), page
+│   │   ├── history/                # HistoryList, page
+│   │   └── admin/                  # AdminDashboard, AdminEval/AdminMetrics pages,
+│   │                               #   adminEval.ts, adminMetrics.ts
+│   ├── App.tsx                  # routes: wires each feature's page component
 │   └── main.tsx
-└── tests/                      # Vitest + React Testing Library
+└── tests/                      # Vitest + React Testing Library, mirrored by feature
 
 eval/
 ├── dataset_sync.py            # pushes Evaluation Dataset Items into a LangSmith dataset
@@ -218,6 +260,12 @@ no App Service yet). All application code (`core/config.py`, `retrieval_service.
 environment-conditional branching, so introducing the App Service module later changes
 only `infra/` and which principal holds the RBAC role assignments — never
 `backend/src/`.
+
+`frontend/src/` is itself organized by feature (`features/auth/`, `features/upload/`,
+`features/query/`, `features/chat/`, `features/history/`, `features/admin/`), mirroring
+the backend's `api/`→`services/` per-concern split, with `components/ui/` (shadcn/ui
+primitives) and `lib/utils.ts` as the only code shared across features (research.md
+§14) — no feature folder defines its own styled button, input, or card.
 
 ## Complexity Tracking
 
