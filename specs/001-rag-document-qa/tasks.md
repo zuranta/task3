@@ -239,15 +239,15 @@ latency, token consumption, and error rate are all observable, broken down by st
 
 ### Tests for User Story 5
 
-- [ ] T090 [P] [US5] Contract test `GET /admin/metrics` (403 for non-admin; 200 shape with per-stage breakdown for admin) in `backend/tests/contract/test_admin_metrics.py`
-- [ ] T091 [P] [US5] Integration test: mixed success/failure traffic is reflected in metrics, data no more than 5 minutes stale in `backend/tests/integration/test_metrics_visibility.py`
+- [X] T090 [P] [US5] Contract test `GET /admin/metrics` (403 for non-admin; 200 shape with per-stage breakdown for admin) in `backend/tests/contract/test_admin_metrics.py`
+- [X] T091 [P] [US5] Integration test: mixed success/failure traffic is reflected in metrics, data no more than 5 minutes stale in `backend/tests/integration/test_metrics_visibility.py`
 
 ### Implementation for User Story 5
 
-- [ ] T092 [US5] Implement `backend/src/services/metrics_service.py` querying Application Insights for latency/token/error-rate figures by stage and time window (depends on T023)
-- [ ] T093 [US5] Implement `GET /admin/metrics` route, gated by `require_admin`, in `backend/src/api/admin_metrics.py` (depends on T092, T020)
-- [ ] T094 [US5] Register the admin_metrics router in `backend/src/main.py` (depends on T022, T093)
-- [ ] T095 [P] [US5] Implement the `AdminMetrics` page/components in `frontend/src/pages/AdminMetrics.tsx`
+- [X] T092 [US5] Implement `backend/src/services/metrics_service.py` querying Application Insights for latency/token/error-rate figures by stage and time window (depends on T023) — verified live against the real Application Insights resource; fixed two bugs the live check surfaced (see below)
+- [X] T093 [US5] Implement `GET /admin/metrics` route, gated by `require_admin`, in `backend/src/api/admin_metrics.py` (depends on T092, T020)
+- [X] T094 [US5] Register the admin_metrics router in `backend/src/main.py` (depends on T022, T093)
+- [X] T095 [P] [US5] Implement the `AdminMetrics` page/components in `frontend/src/pages/AdminMetrics.tsx`
 
 **Checkpoint**: All five user stories independently functional.
 

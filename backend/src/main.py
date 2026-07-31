@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from src.api.admin_eval import router as admin_eval_router
+from src.api.admin_metrics import router as admin_metrics_router
 from src.api.auth import router as auth_router
 from src.api.documents import router as documents_router
 from src.api.queries import router as queries_router
@@ -30,9 +31,7 @@ def create_app() -> FastAPI:
     app.include_router(documents_router)
     app.include_router(queries_router)
     app.include_router(admin_eval_router)
-
-    # Remaining routers are registered incrementally per user story:
-    #   User Story 5: admin_metrics router
+    app.include_router(admin_metrics_router)
 
     return app
 

@@ -24,6 +24,7 @@ class Settings(BaseSettings):
     azure_search_index_name: str = "rag-documents"
     key_vault_uri: str
     applicationinsights_connection_string: str | None = None
+    application_insights_resource_id: str | None = None
 
     database_url: str = "sqlite+aiosqlite:///./rag_document_qa.db"
 

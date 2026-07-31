@@ -64,6 +64,7 @@ module roles 'modules/roles.bicep' = {
     principalType: principalType
     searchServiceName: search.outputs.searchServiceName
     keyVaultName: keyVault.outputs.keyVaultName
+    appInsightsName: appInsightsName
   }
 }
 
@@ -84,3 +85,4 @@ module openAiRole 'modules/openai-role.bicep' = {
 output searchEndpoint string = search.outputs.searchEndpoint
 output keyVaultUri string = keyVault.outputs.keyVaultUri
 output appInsightsConnectionString string = monitoring.outputs.appInsightsConnectionString
+output appInsightsResourceId string = monitoring.outputs.appInsightsResourceId
