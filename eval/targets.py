@@ -19,23 +19,45 @@ if str(_BACKEND_DIR) not in sys.path:
 from src.services import generation_service, retrieval_service  # noqa: E402
 
 
-def make_target(version_label: str, eval_user_id: str = "eval-harness") -> Callable[[dict], dict]:
+def make_target(
+    version_label: str, eval_user_id: str = "eval-harness"
+) -> Callable[[dict], dict]:
     """Returns a sync callable LangSmith's evaluate() can invoke per example."""
 
     def target(inputs: dict) -> dict:
         question = inputs["question"]
 
         async def _run() -> tuple:
-            question_vector = (await generation_service.embed([question]))[0]
-            passages = await retrieval_service.search(
-                user_id=eval_user_id, question=question, question_vector=question_vector
-            )
-            generated, _usage = await generation_service.generate_answer(
-                question=question, passages=passages
-            )
-            return generated, passages
+            try:
+                question_vector = (await generation_service.embed([question]))[0]
+                passages = await retrieval_service.search(
+                    user_id=eval_user_id,
+                    question=question,
+                    question_vector=question_vector,
+                )
+                generated, _usage = await generation_service.generate_answer(
+                    question=question, passages=passages
+                )
+                return generated, passages
+            finally:
+                # Each target() call gets its own asyncio.run() loop, but
+                # generation_service/retrieval_service cache their async
+                # clients per-process (correct for the app's single
+                # long-lived loop). Close and evict them here so the next
+                # call rebuilds clients bound to its own loop, instead of
+                # reusing ones tied to this loop once it closes.
+                await generation_service._client().close()
+                await generation_service._credential().close()
+                await retrieval_service._search_client().close()
+                await retrieval_service._index_client().close()
+                await retrieval_service._credential().close()
 
         generated, passages = asyncio.run(_run())
+        generation_service._client.cache_clear()
+        generation_service._credential.cache_clear()
+        retrieval_service._search_client.cache_clear()
+        retrieval_service._index_client.cache_clear()
+        retrieval_service._credential.cache_clear()
 
         cited_passage_ids = {c.passage_id for c in generated.citations}
         citations = [

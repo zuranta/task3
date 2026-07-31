@@ -18,7 +18,9 @@ _COGNITIVE_SERVICES_SCOPE = "https://cognitiveservices.azure.com/.default"
 
 @lru_cache
 def _client() -> AzureOpenAI:
-    token_provider = get_bearer_token_provider(DefaultAzureCredential(), _COGNITIVE_SERVICES_SCOPE)
+    token_provider = get_bearer_token_provider(
+        DefaultAzureCredential(), _COGNITIVE_SERVICES_SCOPE
+    )
     return AzureOpenAI(
         azure_endpoint=os.environ["AZURE_OPENAI_ENDPOINT"],
         azure_ad_token_provider=token_provider,
@@ -35,6 +37,5 @@ def judge(system_prompt: str, user_prompt: str) -> str:
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt},
         ],
-        temperature=0,
     )
     return completion.choices[0].message.content or ""
