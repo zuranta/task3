@@ -46,11 +46,17 @@ export function ChatInput({
           placeholder="Ask a question about your documents…"
           disabled={isAsking}
           rows={1}
-          className="max-h-40 resize-none"
+          className="min-h-10 max-h-40 resize-none py-2"
           required
         />
       </div>
-      <Button type="submit" disabled={isAsking} size="icon" aria-label={isAsking ? "Asking…" : "Ask"}>
+      <Button
+        type="submit"
+        disabled={isAsking}
+        size="icon"
+        className="shrink-0"
+        aria-label={isAsking ? "Asking…" : "Ask"}
+      >
         <Send className="h-4 w-4" />
       </Button>
     </form>

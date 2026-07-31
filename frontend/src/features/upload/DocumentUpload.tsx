@@ -75,8 +75,12 @@ export function DocumentUpload() {
         <CardTitle className="text-lg">Your documents</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <form onSubmit={handleSubmit} aria-label="Upload document" className="flex flex-col gap-2 sm:flex-row">
-          <div className="flex-1 space-y-2">
+        <form
+          onSubmit={handleSubmit}
+          aria-label="Upload document"
+          className="flex flex-col gap-2 sm:flex-row sm:items-center"
+        >
+          <div className="flex-1">
             <Label htmlFor="document-file" className="sr-only">
               Upload a document (pdf, docx, txt, md)
             </Label>
