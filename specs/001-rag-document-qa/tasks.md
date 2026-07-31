@@ -295,43 +295,43 @@ and mobile viewport widths.
 
 > Write these tests FIRST; confirm they FAIL before implementation.
 
-- [ ] T102 [P] [US6] Component test: `ChatWindow` renders user/assistant bubbles in submission order and auto-scrolls to the latest message in `frontend/tests/features/chat/ChatWindow.test.tsx`
-- [ ] T103 [P] [US6] Component/hook test: submitting a question appends a pending assistant placeholder that renders `TypingIndicator`, then the placeholder updates in place to the complete answer with citations on success or a styled error bubble on failure, in `frontend/tests/features/chat/useConversation.test.tsx`
-- [ ] T104 [P] [US6] Component test: `ChatBubble` renders citation badges with a visually distinct style (different token/class) from the answer body text in `frontend/tests/features/chat/ChatBubble.test.tsx`
-- [ ] T105 [P] [US6] Component tests: `DocumentUpload` and `HistoryList` each render a loading indicator while pending, a distinct empty-state message with zero items, and a styled (non-raw-JSON) error message on failure, in `frontend/tests/features/upload/DocumentUpload.test.tsx` and `frontend/tests/features/history/HistoryList.test.tsx`
+- [X] T102 [P] [US6] Component test: `ChatWindow` renders user/assistant bubbles in submission order and auto-scrolls to the latest message in `frontend/tests/features/chat/ChatWindow.test.tsx`
+- [X] T103 [P] [US6] Component/hook test: submitting a question appends a pending assistant placeholder that renders `TypingIndicator`, then the placeholder updates in place to the complete answer with citations on success or a styled error bubble on failure, in `frontend/tests/features/chat/useConversation.test.tsx`
+- [X] T104 [P] [US6] Component test: `ChatBubble` renders citation badges with a visually distinct style (different token/class) from the answer body text in `frontend/tests/features/chat/ChatBubble.test.tsx`
+- [X] T105 [P] [US6] Component tests: `DocumentUpload` and `HistoryList` each render a loading indicator while pending, a distinct empty-state message with zero items, and a styled (non-raw-JSON) error message on failure, in `frontend/tests/features/upload/DocumentUpload.test.tsx` and `frontend/tests/features/history/HistoryList.test.tsx`
 
 ### Implementation for User Story 6
 
 **Design system foundation**
 
-- [ ] T106 [P] Install and configure Tailwind CSS (`postcss.config.js`, `tailwind.config.ts` with the color/spacing/typography tokens from research.md §13) and the shadcn/ui CLI (`components.json`) in `frontend/`
-- [ ] T107 [P] Define the CSS custom-property design tokens — `background`/`foreground`/`card`/`primary`/`primary-foreground`/`secondary`/`muted`/`muted-foreground`/`accent`/`destructive`/`border`/`input`/`ring`, plus the `citation`/`citation-foreground` pair for FR-031 — in `frontend/src/index.css` (depends on T106)
-- [ ] T108 [P] Add the `cn()` class-merge helper in `frontend/src/lib/utils.ts`
-- [ ] T109 [P] Generate the shadcn/ui primitives — button, input, textarea, label, card, alert, badge, avatar, skeleton, separator, dialog, table, form — into `frontend/src/components/ui/` (depends on T106, T107)
+- [X] T106 [P] Install and configure Tailwind CSS (`postcss.config.js`, `tailwind.config.ts` with the color/spacing/typography tokens from research.md §13) and the shadcn/ui CLI (`components.json`) in `frontend/` — Tailwind pinned to v3.4 (not the v4 that `npm install tailwindcss@latest` resolves to) to keep the classic JS-config + `@tailwind` directive setup this plan documents
+- [X] T107 [P] Define the CSS custom-property design tokens — `background`/`foreground`/`card`/`primary`/`primary-foreground`/`secondary`/`muted`/`muted-foreground`/`accent`/`destructive`/`border`/`input`/`ring`, plus the `citation`/`citation-foreground` pair for FR-031 — in `frontend/src/index.css` (depends on T106)
+- [X] T108 [P] Add the `cn()` class-merge helper in `frontend/src/lib/utils.ts`
+- [X] T109 [P] Generate the shadcn/ui primitives — button, input, textarea, label, card, alert, badge, avatar, skeleton, separator, dialog, table — into `frontend/src/components/ui/` (depends on T106, T107) — **`form` intentionally omitted**: shadcn's `form.tsx` wraps `react-hook-form` + zod, a meaningfully heavier dependency our simple 2-4-field controlled forms (already covered by `Label`+`Input`+`Textarea`) don't need; every form in this codebase uses plain `useState`, not react-hook-form
 
 **Restructure existing screens into feature folders**
 
-- [ ] T110 [US6] Move `LoginForm.tsx`, `RegisterForm.tsx`, `AuthProvider.tsx`, `auth.ts`, `Login.tsx`, `Register.tsx` into `frontend/src/features/auth/`, restyled with shadcn/ui `Card`/`Input`/`Label`/`Button`/`Alert` primitives (depends on T109)
-- [ ] T111 [US6] Move `DocumentUpload.tsx`, `documents.ts` into `frontend/src/features/upload/`, restyled with shadcn/ui primitives, adding a `Skeleton` loading state and an explicit empty-state message when no documents exist (FR-030) (depends on T109)
-- [ ] T112 [US6] Move `queries.ts` (question submission + history fetch calls, shared `Answer`/`Citation` types) into `frontend/src/features/query/` (depends on T109)
-- [ ] T113 [US6] Move `HistoryList.tsx` and `History.tsx` (as `HistoryPage.tsx`) into `frontend/src/features/history/`, restyled with shadcn/ui primitives; replace the old `AnswerCard.tsx`/`CitationList.tsx` detail-view rendering with `CitationBadge` (T127) so History's citation display matches chat's, then delete `AnswerCard.tsx`/`CitationList.tsx`; add an explicit empty-state message (FR-019, FR-030, FR-031) (depends on T109, T112, T127)
-- [ ] T114 [US6] Move `AdminDashboard.tsx`, `AdminEval.tsx`, `AdminMetrics.tsx`, `adminEval.ts`, `adminMetrics.ts` into `frontend/src/features/admin/`, restyled with shadcn/ui `Table`/`Card`/`Badge` primitives (depends on T109)
+- [X] T110 [US6] Move `LoginForm.tsx`, `RegisterForm.tsx`, `AuthProvider.tsx`, `auth.ts`, `Login.tsx`, `Register.tsx` into `frontend/src/features/auth/`, restyled with shadcn/ui `Card`/`Input`/`Label`/`Button`/`Alert` primitives (depends on T109)
+- [X] T111 [US6] Move `DocumentUpload.tsx`, `documents.ts` into `frontend/src/features/upload/`, restyled with shadcn/ui primitives, adding a `Skeleton` loading state and an explicit empty-state message when no documents exist (FR-030) (depends on T109)
+- [X] T112 [US6] Move `queries.ts` (question submission + history fetch calls, shared `Answer`/`Citation` types) into `frontend/src/features/query/` (depends on T109)
+- [X] T113 [US6] Move `HistoryList.tsx` and `History.tsx` (as `HistoryPage.tsx`) into `frontend/src/features/history/`, restyled with shadcn/ui primitives; replace the old `AnswerCard.tsx`/`CitationList.tsx` detail-view rendering with `CitationBadge` (T127) so History's citation display matches chat's, then delete `AnswerCard.tsx`/`CitationList.tsx`; add an explicit empty-state message (FR-019, FR-030, FR-031) (depends on T109, T112, T127)
+- [X] T114 [US6] Move `AdminDashboard.tsx`, `AdminEval.tsx`, `AdminMetrics.tsx`, `adminEval.ts`, `adminMetrics.ts` into `frontend/src/features/admin/`, restyled with shadcn/ui `Table`/`Card`/`Badge` primitives (depends on T109)
 
 **Chat conversation feature**
 
-- [ ] T127 [P] [US6] Extract a shared `CitationBadge` component (citation text + visually-distinct badge styling per FR-031, with a `source_removed` indicator) in `frontend/src/features/query/CitationBadge.tsx`, used by both `ChatBubble` and the History detail view (depends on T109, T112)
-- [ ] T115 [US6] Implement the `useConversation` hook — message array state (`id`/`role`/`content`/`citations`/`timestamp`/`status` per data-model.md's `ChatMessage` view model); appends a user message plus a pending assistant placeholder on submit, then updates the placeholder in place to `complete` (with `content`/`citations`) or `error` once `POST /queries` resolves — in `frontend/src/features/chat/useConversation.ts` (depends on T112)
-- [ ] T116 [P] [US6] Implement the animated `TypingIndicator` component in `frontend/src/features/chat/TypingIndicator.tsx` (depends on T109)
-- [ ] T117 [P] [US6] Implement `ChatBubble` — distinct user/assistant styling, citations rendered via `CitationBadge` (T127), a distinct styled state for `status: error` (FR-030/FR-034), content that wraps/scrolls within the bubble rather than overflowing on narrow widths — in `frontend/src/features/chat/ChatBubble.tsx` (depends on T109, T127)
-- [ ] T118 [US6] Implement `ChatWindow` — scrolling message list composing `ChatBubble`/`TypingIndicator`, auto-scrolling to the latest message via a ref + effect keyed on the message array (FR-033) — in `frontend/src/features/chat/ChatWindow.tsx` (depends on T116, T117)
-- [ ] T119 [P] [US6] Implement `ChatInput`, restyled with shadcn/ui `Textarea`/`Button` and disabled while a message is pending, in `frontend/src/features/chat/ChatInput.tsx` (depends on T109)
-- [ ] T120 [US6] Replace `Workspace.tsx`'s static request/response layout with `ChatPage` (composes `ChatWindow` + `ChatInput` + `useConversation`, plus `DocumentUpload` from `features/upload/`) in `frontend/src/features/chat/ChatPage.tsx`; remove the old `frontend/src/pages/Workspace.tsx` (depends on T115, T118, T119, T111)
+- [X] T127 [P] [US6] Extract a shared `CitationBadge` component (citation text + visually-distinct badge styling per FR-031, with a `source_removed` indicator) in `frontend/src/features/query/CitationBadge.tsx`, used by both `ChatBubble` and the History detail view (depends on T109, T112)
+- [X] T115 [US6] Implement the `useConversation` hook — message array state (`id`/`role`/`content`/`citations`/`timestamp`/`status` per data-model.md's `ChatMessage` view model); appends a user message plus a pending assistant placeholder on submit, then updates the placeholder in place to `complete` (with `content`/`citations`) or `error` once `POST /queries` resolves — in `frontend/src/features/chat/useConversation.ts` (depends on T112)
+- [X] T116 [P] [US6] Implement the animated `TypingIndicator` component in `frontend/src/features/chat/TypingIndicator.tsx` (depends on T109)
+- [X] T117 [P] [US6] Implement `ChatBubble` — distinct user/assistant styling, citations rendered via `CitationBadge` (T127), a distinct styled state for `status: error` (FR-030/FR-034), content that wraps/scrolls within the bubble rather than overflowing on narrow widths — in `frontend/src/features/chat/ChatBubble.tsx` (depends on T109, T127)
+- [X] T118 [US6] Implement `ChatWindow` — scrolling message list composing `ChatBubble`/`TypingIndicator`, auto-scrolling to the latest message via a ref + effect keyed on the message array (FR-033) — in `frontend/src/features/chat/ChatWindow.tsx` (depends on T116, T117)
+- [X] T119 [P] [US6] Implement `ChatInput`, restyled with shadcn/ui `Textarea`/`Button` and disabled while a message is pending, in `frontend/src/features/chat/ChatInput.tsx` (depends on T109) — also submits on Enter (Shift+Enter for a newline)
+- [X] T120 [US6] Replace `Workspace.tsx`'s static request/response layout with `ChatPage` (composes `ChatWindow` + `ChatInput` + `useConversation`, plus `DocumentUpload` from `features/upload/`) in `frontend/src/features/chat/ChatPage.tsx`; remove the old `frontend/src/pages/Workspace.tsx` (depends on T115, T118, T119, T111)
 
 **Wiring & cross-screen consistency**
 
-- [ ] T121 [US6] Update route wiring in `frontend/src/App.tsx` to import each page from its new `features/*` location (depends on T110, T111, T113, T114, T120)
-- [ ] T122 [P] [US6] Apply the shared typography/spacing scale (research.md §13) to every remaining screen shell — page titles, section headings, body/meta text — so all screens share one visual language (FR-029, SC-013) (depends on T110, T111, T113, T114, T120)
-- [ ] T123 [P] [US6] Add responsive layout classes (mobile-first, no required horizontal scroll, wrapping message/citation content) across `features/auth/`, `features/chat/`, `features/upload/`, `features/history/`, `features/admin/` (FR-032, SC-016) (depends on T122)
+- [X] T121 [US6] Update route wiring in `frontend/src/App.tsx` to import each page from its new `features/*` location (depends on T110, T111, T113, T114, T120)
+- [X] T122 [P] [US6] Apply the shared typography/spacing scale (research.md §13) to every remaining screen shell — page titles, section headings, body/meta text — so all screens share one visual language (FR-029, SC-013) (depends on T110, T111, T113, T114, T120)
+- [X] T123 [P] [US6] Add responsive layout classes (mobile-first, no required horizontal scroll, wrapping message/citation content) across `features/auth/`, `features/chat/`, `features/upload/`, `features/history/`, `features/admin/` (FR-032, SC-016) (depends on T122) — audit caught one real gap: the chat header's nav buttons overflowed a 375px viewport for admin accounts (unconditional icon+text); fixed by hiding labels below `sm` with `aria-label` preserving the accessible name
 
 **Checkpoint**: User Story 6 is independently functional and testable — all six user
 stories are now complete.
@@ -343,9 +343,9 @@ stories are now complete.
 **Purpose**: Cleanup and end-to-end validation specific to this amendment, on top of
 Phase 8's existing coverage.
 
-- [ ] T124 [P] Remove the now-empty `frontend/src/components/` (non-`ui/`), `frontend/src/pages/`, and `frontend/src/services/` directories once every file has moved into a `features/` folder (depends on T121)
-- [ ] T125 Run quickstart.md manual validation scenario 7 (design-system consistency across every screen, the chat typing-indicator/auto-scroll/citation-badge sequence, and mobile-width usability) end-to-end (depends on T121, T123)
-- [ ] T126 [P] Update `frontend/README.md` to describe the Tailwind/shadcn/ui design system and the feature-folder structure (depends on T121)
+- [X] T124 [P] Remove the now-empty `frontend/src/components/` (non-`ui/`), `frontend/src/pages/`, and `frontend/src/services/` directories once every file has moved into a `features/` folder (depends on T121) — every file is moved/deleted per git (nothing tracked remains in those paths); the two now-empty `src/pages/`/`src/services/` directory entries still exist on disk (this environment's file-deletion policy blocks removing them) but are untracked by git and have no effect on the build or repo state
+- [X] T125 Run quickstart.md manual validation scenario 7 (design-system consistency across every screen, the chat typing-indicator/auto-scroll/citation-badge sequence, and mobile-width usability) end-to-end (depends on T121, T123) — **partially run**: `tsc`/ESLint/Vitest (19 tests) and a production build all pass, and the Vite dev server was smoke-tested to serve `index.html`/`main.tsx` without error; a full interactive/visual pass in an actual browser (confirming the typing-indicator/auto-scroll sequence and mobile viewport rendering by eye) was **not performed** — this sandboxed environment has no browser tool available, mirroring the T062/T098 live-Azure caveat from earlier phases. Recommend a manual pass before merge.
+- [X] T126 [P] Update `frontend/README.md` to describe the Tailwind/shadcn/ui design system and the feature-folder structure (depends on T121) — created new (no `frontend/README.md` existed on `main`; Phase 8, which added one, hasn't merged there yet)
 
 ---
 
