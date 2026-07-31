@@ -24,13 +24,24 @@ export function CitationBadge({ citation }: { citation: Citation }) {
   );
 }
 
+function dedupeCitations(citations: Citation[]): Citation[] {
+  const seen = new Set<string>();
+  return citations.filter((citation) => {
+    const key = `${citation.document_id}::${citation.location_label}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
 export function CitationBadgeList({ citations }: { citations: Citation[] }) {
-  if (citations.length === 0) return null;
+  const uniqueCitations = dedupeCitations(citations);
+  if (uniqueCitations.length === 0) return null;
 
   return (
     <ul aria-label="Citations" className="mt-2 flex flex-wrap gap-1.5">
-      {citations.map((citation, index) => (
-        <li key={`${citation.document_id}-${index}`}>
+      {uniqueCitations.map((citation) => (
+        <li key={`${citation.document_id}-${citation.location_label}`}>
           <CitationBadge citation={citation} />
         </li>
       ))}

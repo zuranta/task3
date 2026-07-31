@@ -82,10 +82,18 @@ async def ask_question(db: AsyncSession, *, user_id: str, question_text: str) ->
     await db.flush()
 
     passages_by_id = {p.id: p for p in passages}
+    seen_passage_ids: set[str] = set()
     for cited in generated.citations:
+        if cited.passage_id in seen_passage_ids:
+            # The model can list the same passage_id more than once (e.g. it
+            # drew on that passage for more than one part of the answer) --
+            # persist each cited passage at most once so the same
+            # document/location never appears twice in the citation list.
+            continue
         passage = passages_by_id.get(cited.passage_id)
         if passage is None:
             continue
+        seen_passage_ids.add(cited.passage_id)
         db.add(
             Citation(
                 answer_id=answer.id,
