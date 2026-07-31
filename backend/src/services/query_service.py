@@ -99,6 +99,7 @@ async def ask_question(db: AsyncSession, *, user_id: str, question_text: str) ->
                 answer_id=answer.id,
                 document_id=passage.document_id,
                 location_label=passage.location_label,
+                passage_content=passage.content,
             )
         )
 
@@ -132,6 +133,7 @@ async def build_query_record(db: AsyncSession, query: Query) -> schemas.QueryRec
             document_filename=documents_by_id[c.document_id].original_filename,
             location_label=c.location_label,
             source_removed=documents_by_id[c.document_id].status == DocumentStatus.deleted,
+            passage_content=c.passage_content,
         )
         for c in answer.citations
     ]

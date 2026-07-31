@@ -134,6 +134,10 @@ class Citation(Base):
     )
     document_id: Mapped[str] = mapped_column(String(36), ForeignKey("documents.id"), nullable=False)
     location_label: Mapped[str] = mapped_column(String(255), nullable=False)
+    # Snapshotted at answer time (not re-fetched from the search index), so a
+    # past answer's citation always shows exactly what it was grounded in
+    # (FR-020) even if the document is later deleted or re-indexed.
+    passage_content: Mapped[str] = mapped_column(Text, nullable=False, server_default="")
 
     answer: Mapped["Answer"] = relationship(back_populates="citations")
     document: Mapped["Document"] = relationship()
