@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 
 import { AdminEval } from "./pages/AdminEval";
+import { AdminMetrics } from "./pages/AdminMetrics";
 import { History } from "./pages/History";
 import { Login } from "./pages/Login";
 import { Register } from "./pages/Register";
@@ -63,6 +64,14 @@ export function App() {
         element={
           <AdminRoute>
             <AdminEval />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/metrics"
+        element={
+          <AdminRoute>
+            <AdminMetrics />
           </AdminRoute>
         }
       />

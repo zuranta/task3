@@ -37,6 +37,7 @@ def configure_telemetry(app: FastAPI, connection_string: str | None) -> None:
         )
 
     from opentelemetry import trace
+    from opentelemetry.trace import Status, StatusCode
 
     tracer = trace.get_tracer(__name__)
 
@@ -47,4 +48,19 @@ def configure_telemetry(app: FastAPI, connection_string: str | None) -> None:
             span.set_attribute("rag.request_stage", stage)
             response = await call_next(request)
             span.set_attribute("http.status_code", response.status_code)
+            # FastAPI's exception handlers turn AppErrors into a normal
+            # JSONResponse rather than letting an exception propagate, so
+            # the span never sees one -- explicitly marking status is the
+            # only way Application Insights' `success` column reflects a
+            # 4xx/5xx response instead of always reading as successful.
+            if response.status_code >= 400:
+                span.set_status(Status(StatusCode.ERROR))
             return response
+
+
+def record_generation_tokens(total_tokens: int) -> None:
+    """Attaches token consumption to the current request.stage span (FR-027)
+    so it's queryable alongside latency/error-rate in Application Insights."""
+    from opentelemetry import trace
+
+    trace.get_current_span().set_attribute("rag.total_tokens", total_tokens)

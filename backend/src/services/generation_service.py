@@ -14,6 +14,7 @@ import openai
 from azure.identity.aio import DefaultAzureCredential, get_bearer_token_provider
 from openai import AsyncAzureOpenAI
 
+from src.core import telemetry
 from src.core.config import get_settings
 from src.core.errors import UpstreamServiceError
 from src.models.schemas import GeneratedAnswer
@@ -110,4 +111,5 @@ async def generate_answer(
         total_tokens=total_tokens,
         context_window_utilization=total_tokens / settings.azure_openai_model_context_window,
     )
+    telemetry.record_generation_tokens(total_tokens)
     return parsed, usage_info

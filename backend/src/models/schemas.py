@@ -143,3 +143,20 @@ class ComparisonRun(BaseModel):
     winner: Literal["a", "b", "tie"] | None = None
     started_at: datetime
     completed_at: datetime | None = None
+
+
+# --- User Story 5: Monitor Operational Health in Production ----------------------
+
+
+class StageMetrics(BaseModel):
+    request_count: int
+    error_count: int
+    error_rate: float
+    p50_latency_ms: float
+    p95_latency_ms: float
+    total_tokens: int
+
+
+class OperationalMetrics(BaseModel):
+    window_minutes: int
+    by_stage: dict[str, StageMetrics]

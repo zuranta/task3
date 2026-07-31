@@ -54,6 +54,7 @@ export function Workspace() {
       <h1>Workspace</h1>
       <Link to="/history">View history</Link>
       {isAdmin && <Link to="/admin/eval">Admin: Evaluation</Link>}
+      {isAdmin && <Link to="/admin/metrics">Admin: Operational Metrics</Link>}
       <button type="button" onClick={logout}>
         Log out
       </button>
