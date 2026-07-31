@@ -200,29 +200,29 @@ per-question and aggregate scored comparison identifying the better-performing v
 
 ### Tests for User Story 4
 
-- [ ] T070 [P] [US4] Contract test admin-only enforcement (403 for a non-admin caller) across all `/admin/eval/*` routes in `backend/tests/contract/test_admin_eval_authz.py`
-- [ ] T071 [P] [US4] Contract test `POST`/`GET /admin/eval/dataset-items` in `backend/tests/contract/test_admin_eval_dataset.py`
-- [ ] T072 [P] [US4] Contract test `POST /admin/eval/comparison-runs` and `GET /admin/eval/comparison-runs/{id}` (winner, per-version aggregate scores, `partial` status when a version fails to answer some questions) in `backend/tests/contract/test_admin_eval_runs.py`
-- [ ] T073 [P] [US4] Integration test: end-to-end comparison run against a small fixture dataset, including one question one version fails to answer in `backend/tests/integration/test_comparison_run.py`
-- [ ] T074 [P] [US4] Unit tests for the correctness/relevance/groundedness evaluator functions in `eval/tests/test_evaluators.py`
-- [ ] T075 [P] [US4] Test that the admin-provisioning script (T077) produces an account whose role is `admin` and that account passes the T070 authz checks, in `backend/tests/integration/test_admin_provisioning.py` — addresses `/speckit-analyze` finding U3
+- [X] T070 [P] [US4] Contract test admin-only enforcement (403 for a non-admin caller) across all `/admin/eval/*` routes in `backend/tests/contract/test_admin_eval_authz.py`
+- [X] T071 [P] [US4] Contract test `POST`/`GET /admin/eval/dataset-items` in `backend/tests/contract/test_admin_eval_dataset.py`
+- [X] T072 [P] [US4] Contract test `POST /admin/eval/comparison-runs` and `GET /admin/eval/comparison-runs/{id}` (winner, per-version aggregate scores, `partial` status when a version fails to answer some questions) in `backend/tests/contract/test_admin_eval_runs.py`
+- [X] T073 [P] [US4] Integration test: end-to-end comparison run against a small fixture dataset, including one question one version fails to answer in `backend/tests/integration/test_comparison_run.py`
+- [X] T074 [P] [US4] Unit tests for the correctness/relevance/groundedness evaluator functions in `eval/tests/test_evaluators.py`
+- [X] T075 [P] [US4] Test that the admin-provisioning script (T077) produces an account whose role is `admin` and that account passes the T070 authz checks, in `backend/tests/integration/test_admin_provisioning.py` — addresses `/speckit-analyze` finding U3
 
 ### Implementation for User Story 4
 
-- [ ] T076 [P] [US4] Define the `ComparisonRun` ORM model in `backend/src/models/db.py`
-- [ ] T077 [US4] Implement `backend/scripts/create_admin.py`: a CLI that promotes an existing user (by email/username) or creates a new one directly with `role=admin`, for out-of-band administrator provisioning per spec.md's Assumptions (depends on T016) — addresses `/speckit-analyze` finding U3
-- [ ] T078 [US4] Generate and apply the Alembic migration for the `comparison_runs` table in `backend/alembic/versions/` (depends on T076)
-- [ ] T079 [P] [US4] Add `DatasetItem`, `ComparisonRunRequest`, `ComparisonRun` Pydantic schemas in `backend/src/models/schemas.py`
-- [ ] T080 [P] [US4] Implement `eval/dataset_sync.py` pushing admin-curated dataset items into a LangSmith dataset
-- [ ] T081 [P] [US4] Implement `eval/evaluators/correctness.py` (LLM-as-judge against the expected answer, via the existing Azure OpenAI deployment)
-- [ ] T082 [P] [US4] Implement `eval/evaluators/relevance.py` (LLM-as-judge against the original question)
-- [ ] T083 [P] [US4] Implement `eval/evaluators/groundedness.py` (citation-coverage check with LLM-as-judge fallback for paraphrased claims)
-- [ ] T084 [US4] Implement `eval/run_experiment.py` running two named versions through LangSmith's `evaluate()`, producing per-question and aggregate scores, recording non-responses as failures rather than omissions (depends on T081, T082, T083)
-- [ ] T085 [US4] Implement `backend/src/services/eval_service.py` orchestrating dataset-item CRUD and triggering `run_experiment`, persisting `ComparisonRun` summaries (depends on T076, T084)
-- [ ] T086 [US4] Implement `/admin/eval/dataset-items` and `/admin/eval/comparison-runs` routes, gated by `require_admin`, in `backend/src/api/admin_eval.py` (depends on T085, T020)
-- [ ] T087 [US4] Register the admin_eval router in `backend/src/main.py` (depends on T022, T086)
-- [ ] T088 [P] [US4] Implement `AdminDashboard` / comparison-run view components in `frontend/src/components/AdminDashboard.tsx`
-- [ ] T089 [US4] Implement the `AdminEval` page wired to the admin eval endpoints in `frontend/src/pages/AdminEval.tsx` (depends on T088)
+- [X] T076 [P] [US4] Define the `ComparisonRun` ORM model in `backend/src/models/db.py`
+- [X] T077 [US4] Implement `backend/scripts/create_admin.py`: a CLI that promotes an existing user (by email/username) or creates a new one directly with `role=admin`, for out-of-band administrator provisioning per spec.md's Assumptions (depends on T016) — addresses `/speckit-analyze` finding U3
+- [X] T078 [US4] Generate and apply the Alembic migration for the `comparison_runs` table in `backend/alembic/versions/` (depends on T076)
+- [X] T079 [P] [US4] Add `DatasetItem`, `ComparisonRunRequest`, `ComparisonRun` Pydantic schemas in `backend/src/models/schemas.py`
+- [X] T080 [P] [US4] Implement `eval/dataset_sync.py` pushing admin-curated dataset items into a LangSmith dataset
+- [X] T081 [P] [US4] Implement `eval/evaluators/correctness.py` (LLM-as-judge against the expected answer, via the existing Azure OpenAI deployment)
+- [X] T082 [P] [US4] Implement `eval/evaluators/relevance.py` (LLM-as-judge against the original question)
+- [X] T083 [P] [US4] Implement `eval/evaluators/groundedness.py` (citation-coverage check with LLM-as-judge fallback for paraphrased claims)
+- [X] T084 [US4] Implement `eval/run_experiment.py` running two named versions through LangSmith's `evaluate()`, producing per-question and aggregate scores, recording non-responses as failures rather than omissions (depends on T081, T082, T083) — live LangSmith execution not exercised in this environment (no LangSmith credentials, mirrors T062's live-Azure caveat); `evaluate()`'s row/result shape was verified against the installed SDK's source, not a live call
+- [X] T085 [US4] Implement `backend/src/services/eval_service.py` orchestrating dataset-item CRUD and triggering `run_experiment`, persisting `ComparisonRun` summaries (depends on T076, T084)
+- [X] T086 [US4] Implement `/admin/eval/dataset-items` and `/admin/eval/comparison-runs` routes, gated by `require_admin`, in `backend/src/api/admin_eval.py` (depends on T085, T020)
+- [X] T087 [US4] Register the admin_eval router in `backend/src/main.py` (depends on T022, T086)
+- [X] T088 [P] [US4] Implement `AdminDashboard` / comparison-run view components in `frontend/src/components/AdminDashboard.tsx`
+- [X] T089 [US4] Implement the `AdminEval` page wired to the admin eval endpoints in `frontend/src/pages/AdminEval.tsx` (depends on T088)
 
 **Checkpoint**: User Stories 1–4 all independently functional.
 

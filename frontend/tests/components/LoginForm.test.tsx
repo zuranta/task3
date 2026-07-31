@@ -8,6 +8,7 @@ import { ApiError, AuthContext, AuthContextValue } from "../../src/services/auth
 function renderWithAuth(overrides: Partial<AuthContextValue> = {}) {
   const value: AuthContextValue = {
     isAuthenticated: false,
+    isAdmin: false,
     login: vi.fn(),
     register: vi.fn(),
     logout: vi.fn(),

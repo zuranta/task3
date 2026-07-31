@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 
+import { AdminEval } from "./pages/AdminEval";
 import { History } from "./pages/History";
 import { Login } from "./pages/Login";
 import { Register } from "./pages/Register";
@@ -9,6 +10,12 @@ import { useAuth } from "./services/auth";
 function ProtectedRoute({ children }: { children: JSX.Element }) {
   const { isAuthenticated } = useAuth();
   return isAuthenticated ? children : <Navigate to="/login" replace />;
+}
+
+function AdminRoute({ children }: { children: JSX.Element }) {
+  const { isAuthenticated, isAdmin } = useAuth();
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  return isAdmin ? children : <Navigate to="/" replace />;
 }
 
 function PublicOnlyRoute({ children }: { children: JSX.Element }) {
@@ -49,6 +56,14 @@ export function App() {
           <ProtectedRoute>
             <History />
           </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/eval"
+        element={
+          <AdminRoute>
+            <AdminEval />
+          </AdminRoute>
         }
       />
     </Routes>

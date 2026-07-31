@@ -177,3 +177,27 @@ async def register_user(client):
         return {"Authorization": f"Bearer {token}"}, user_id
 
     return _register
+
+
+@pytest_asyncio.fixture
+async def register_admin(db_session):
+    """Factory fixture: create a distinct admin account directly (there is no
+    public registration path to the admin role -- it's provisioned out-of-band,
+    see backend/scripts/create_admin.py), return (auth_headers, user_id)."""
+    from src.core.security import create_access_token
+    from src.models.db import User, UserRole
+
+    async def _register(username: str) -> tuple[dict[str, str], str]:
+        user = User(
+            email=f"{username}@example.com",
+            username=username,
+            password_hash="x",
+            role=UserRole.admin,
+        )
+        db_session.add(user)
+        await db_session.commit()
+        await db_session.refresh(user)
+        token = create_access_token(user_id=user.id, role=user.role.value)
+        return {"Authorization": f"Bearer {token}"}, user.id
+
+    return _register

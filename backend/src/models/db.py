@@ -9,7 +9,7 @@ import enum
 import uuid
 from datetime import UTC, datetime
 
-from sqlalchemy import DateTime, Enum, Float, ForeignKey, Integer, String, Text
+from sqlalchemy import JSON, DateTime, Enum, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.core.db import Base
@@ -148,3 +148,39 @@ class RateLimitCounter(Base):
     )
     window_start: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
     count: Mapped[int] = mapped_column(Integer, default=0)
+
+
+# --- User Story 4: Compare Two System Versions Against a Benchmark Dataset --------
+
+
+class ComparisonWinner(enum.StrEnum):
+    a = "a"
+    b = "b"
+    tie = "tie"
+
+
+class ComparisonRunStatus(enum.StrEnum):
+    running = "running"
+    completed = "completed"
+    partial = "partial"
+
+
+class ComparisonRun(Base):
+    __tablename__ = "comparison_runs"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    version_a_label: Mapped[str] = mapped_column(String(255), nullable=False)
+    version_b_label: Mapped[str] = mapped_column(String(255), nullable=False)
+    langsmith_experiment_id_a: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    langsmith_experiment_id_b: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    aggregate_score_a: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    aggregate_score_b: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    winner: Mapped[ComparisonWinner | None] = mapped_column(
+        Enum(ComparisonWinner, native_enum=False), nullable=True
+    )
+    status: Mapped[ComparisonRunStatus] = mapped_column(
+        Enum(ComparisonRunStatus, native_enum=False), default=ComparisonRunStatus.running
+    )
+    created_by: Mapped[str] = mapped_column(String(36), ForeignKey("users.id"), nullable=False)
+    started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)

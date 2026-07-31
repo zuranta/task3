@@ -9,7 +9,7 @@ import { DocumentRecord, deleteDocument, listDocuments } from "../services/docum
 import { QueryRecord, askQuestion } from "../services/queries";
 
 export function Workspace() {
-  const { logout } = useAuth();
+  const { logout, isAdmin } = useAuth();
   const [documents, setDocuments] = useState<DocumentRecord[]>([]);
   const [currentQuery, setCurrentQuery] = useState<QueryRecord | null>(null);
   const [isAsking, setIsAsking] = useState(false);
@@ -53,6 +53,7 @@ export function Workspace() {
     <main>
       <h1>Workspace</h1>
       <Link to="/history">View history</Link>
+      {isAdmin && <Link to="/admin/eval">Admin: Evaluation</Link>}
       <button type="button" onClick={logout}>
         Log out
       </button>
