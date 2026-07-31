@@ -2,8 +2,8 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
-import { LoginForm } from "../../src/components/LoginForm";
-import { ApiError, AuthContext, AuthContextValue } from "../../src/services/auth";
+import { LoginForm } from "../../../src/features/auth/LoginForm";
+import { ApiError, AuthContext, AuthContextValue } from "../../../src/features/auth/auth";
 
 function renderWithAuth(overrides: Partial<AuthContextValue> = {}) {
   const value: AuthContextValue = {

@@ -1,4 +1,4 @@
-import { ApiError, authHeaders } from "./auth";
+import { ApiError, authHeaders } from "../auth/auth";
 
 const API_BASE = "/api/v1/admin/metrics";
 
