@@ -23,9 +23,7 @@ describe("ChatWindow", () => {
   it("shows an empty-state prompt when no messages exist yet", () => {
     render(<ChatWindow messages={[]} />);
 
-    expect(
-      screen.getByText(/ask a question about your uploaded documents/i),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/ask a question about your uploaded documents/i)).toBeInTheDocument();
   });
 
   it("renders user and assistant bubbles in submission order", () => {
@@ -37,9 +35,7 @@ describe("ChatWindow", () => {
 
     render(<ChatWindow messages={messages} />);
 
-    const bubbleTexts = screen
-      .getByLabelText(/conversation/i)
-      .querySelectorAll("p")!;
+    const bubbleTexts = screen.getByLabelText(/conversation/i).querySelectorAll("p")!;
     expect(Array.from(bubbleTexts).map((el) => el.textContent)).toEqual([
       "What is the refund policy?",
       "Refunds are available within 30 days.",

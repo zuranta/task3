@@ -23,7 +23,10 @@ export function HistoryList({
   }
 
   return (
-    <ul aria-label="Query history" className="divide-y divide-border rounded-md border border-border">
+    <ul
+      aria-label="Query history"
+      className="divide-y divide-border rounded-md border border-border"
+    >
       {queries.map((query) => (
         <li key={query.id}>
           <button

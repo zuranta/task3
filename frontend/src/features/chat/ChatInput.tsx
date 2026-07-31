@@ -33,7 +33,11 @@ export function ChatInput({
   }
 
   return (
-    <form onSubmit={handleSubmit} aria-label="Ask a question" className="flex items-end gap-2 border-t border-border p-3">
+    <form
+      onSubmit={handleSubmit}
+      aria-label="Ask a question"
+      className="flex items-end gap-2 border-t border-border p-3"
+    >
       <div className="flex-1">
         <Label htmlFor="question-input" className="sr-only">
           Ask a question about your documents

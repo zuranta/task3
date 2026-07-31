@@ -1,6 +1,12 @@
 import { useNavigate } from "react-router-dom";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../../components/ui/card";
 import { LoginForm } from "./LoginForm";
 
 export function LoginPage() {
@@ -17,7 +23,10 @@ export function LoginPage() {
           <LoginForm onSuccess={() => navigate("/")} />
           <p className="text-center text-sm text-muted-foreground">
             Need an account?{" "}
-            <a href="/register" className="font-medium text-primary underline-offset-4 hover:underline">
+            <a
+              href="/register"
+              className="font-medium text-primary underline-offset-4 hover:underline"
+            >
               Register
             </a>
           </p>
