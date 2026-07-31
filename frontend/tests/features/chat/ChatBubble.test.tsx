@@ -30,6 +30,7 @@ describe("ChatBubble", () => {
           document_filename: "policy.pdf",
           location_label: "p. 2",
           source_removed: false,
+          passage_content: "Refunds must be requested within 30 days of purchase.",
         },
       ],
       timestamp: "2026-07-31T00:00:00.000Z",

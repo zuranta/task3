@@ -51,4 +51,35 @@ describe("DocumentUpload", () => {
     expect(await screen.findByText("handbook.pdf")).toBeInTheDocument();
     expect(screen.getByText("ready")).toBeInTheDocument();
   });
+
+  it("makes a ready document clickable to view its passages, but not a still-processing one", async () => {
+    vi.spyOn(documentsApi, "listDocuments").mockResolvedValue([
+      {
+        id: "doc-1",
+        original_filename: "handbook.pdf",
+        format: "pdf",
+        status: "ready",
+        failure_reason: null,
+        uploaded_at: "2026-07-31T00:00:00.000Z",
+      },
+      {
+        id: "doc-2",
+        original_filename: "still-indexing.pdf",
+        format: "pdf",
+        status: "processing",
+        failure_reason: null,
+        uploaded_at: "2026-07-31T00:00:00.000Z",
+      },
+    ]);
+
+    render(<DocumentUpload />);
+    await screen.findByText("handbook.pdf");
+
+    expect(
+      screen.getByRole("button", { name: /view passages for handbook\.pdf/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /view passages for still-indexing\.pdf/i }),
+    ).not.toBeInTheDocument();
+  });
 });

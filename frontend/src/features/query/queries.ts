@@ -7,6 +7,7 @@ export interface Citation {
   document_filename: string;
   location_label: string;
   source_removed: boolean;
+  passage_content: string;
 }
 
 export interface ResponseMetadata {

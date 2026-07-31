@@ -9,6 +9,7 @@ import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
 import { Skeleton } from "../../components/ui/skeleton";
 import { ApiError } from "../auth/auth";
+import { DocumentPassagesDialog } from "./DocumentPassagesDialog";
 import { DocumentRecord, deleteDocument, listDocuments, uploadDocument } from "./documents";
 
 const STATUS_VARIANT: Record<DocumentRecord["status"], "secondary" | "default" | "destructive"> = {
@@ -84,10 +85,20 @@ export function DocumentUpload() {
             <Label htmlFor="document-file" className="sr-only">
               Upload a document (pdf, docx, txt, md)
             </Label>
-            <Input id="document-file" type="file" ref={inputRef} accept=".pdf,.docx,.txt,.md" required />
+            <Input
+              id="document-file"
+              type="file"
+              ref={inputRef}
+              accept=".pdf,.docx,.txt,.md"
+              required
+            />
           </div>
           <Button type="submit" disabled={isUploading}>
-            {isUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <UploadCloud className="h-4 w-4" />}
+            {isUploading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <UploadCloud className="h-4 w-4" />
+            )}
             {isUploading ? "Uploading…" : "Upload"}
           </Button>
         </form>
@@ -108,18 +119,40 @@ export function DocumentUpload() {
             No documents yet. Upload one above to start asking questions about it.
           </p>
         ) : (
-          <ul aria-label="Your documents" className="divide-y divide-border rounded-md border border-border">
+          <ul
+            aria-label="Your documents"
+            className="divide-y divide-border rounded-md border border-border"
+          >
             {visibleDocuments.map((doc) => (
               <li key={doc.id} className="flex items-center justify-between gap-2 p-3">
-                <div className="flex min-w-0 items-center gap-2">
-                  <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-medium">{doc.original_filename}</p>
-                    {doc.failure_reason && (
-                      <p className="truncate text-xs text-destructive">{doc.failure_reason}</p>
-                    )}
+                {doc.status === "ready" ? (
+                  <DocumentPassagesDialog
+                    documentId={doc.id}
+                    filename={doc.original_filename}
+                    trigger={
+                      <button
+                        type="button"
+                        className="flex min-w-0 items-center gap-2 rounded-sm text-left hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        aria-label={`View passages for ${doc.original_filename}`}
+                      >
+                        <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
+                        <span className="min-w-0 truncate text-sm font-medium">
+                          {doc.original_filename}
+                        </span>
+                      </button>
+                    }
+                  />
+                ) : (
+                  <div className="flex min-w-0 items-center gap-2">
+                    <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium">{doc.original_filename}</p>
+                      {doc.failure_reason && (
+                        <p className="truncate text-xs text-destructive">{doc.failure_reason}</p>
+                      )}
+                    </div>
                   </div>
-                </div>
+                )}
                 <div className="flex shrink-0 items-center gap-2">
                   <Badge variant={STATUS_VARIANT[doc.status]}>{doc.status}</Badge>
                   <Button

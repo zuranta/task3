@@ -38,6 +38,7 @@ describe("useConversation", () => {
             document_filename: "policy.pdf",
             location_label: "p. 2",
             source_removed: false,
+            passage_content: "Refunds must be requested within 30 days of purchase.",
           },
         ],
         metadata: {

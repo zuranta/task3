@@ -1,7 +1,8 @@
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 
-import { CitationBadgeList } from "../../../src/features/query/CitationBadge";
+import { CitationBadge, CitationBadgeList } from "../../../src/features/query/CitationBadge";
 import { Citation } from "../../../src/features/query/queries";
 
 function citation(overrides: Partial<Citation> = {}): Citation {
@@ -10,6 +11,7 @@ function citation(overrides: Partial<Citation> = {}): Citation {
     document_filename: "handbook.md",
     location_label: "Section 1 of 1",
     source_removed: false,
+    passage_content: "The handbook says refunds are available within 30 days.",
     ...overrides,
   };
 }
@@ -41,5 +43,19 @@ describe("CitationBadgeList", () => {
 
     expect(screen.getByText(/Section 1 of 2/)).toBeInTheDocument();
     expect(screen.getByText(/Section 2 of 2/)).toBeInTheDocument();
+  });
+});
+
+describe("CitationBadge", () => {
+  it("opens a dialog showing the cited passage's exact text when clicked", async () => {
+    const user = userEvent.setup();
+    render(<CitationBadge citation={citation()} />);
+
+    expect(screen.queryByText(/The handbook says refunds/)).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /view source passage/i }));
+
+    expect(await screen.findByText(/The handbook says refunds/)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "handbook.md" })).toBeInTheDocument();
   });
 });
