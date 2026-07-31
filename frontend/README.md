@@ -38,13 +38,13 @@ mocked service call, assert on rendered output / calls made).
 
 ## Routes
 
-| Path | Who | Page |
-|---|---|---|
-| `/login`, `/register` | anyone (redirects away if already logged in) | `Login`, `Register` |
-| `/` | any authenticated user | `Workspace` (upload + ask) |
-| `/history` | any authenticated user | `History` |
-| `/admin/eval` | admin/evaluator role only | `AdminEval` (benchmark dataset + comparison runs) |
-| `/admin/metrics` | admin/evaluator role only | `AdminMetrics` (operational health) |
+| Path                  | Who                                          | Page                                              |
+| --------------------- | -------------------------------------------- | ------------------------------------------------- |
+| `/login`, `/register` | anyone (redirects away if already logged in) | `Login`, `Register`                               |
+| `/`                   | any authenticated user                       | `Workspace` (upload + ask)                        |
+| `/history`            | any authenticated user                       | `History`                                         |
+| `/admin/eval`         | admin/evaluator role only                    | `AdminEval` (benchmark dataset + comparison runs) |
+| `/admin/metrics`      | admin/evaluator role only                    | `AdminMetrics` (operational health)               |
 
 `isAdmin` (decoded client-side from the JWT, in `src/services/auth.ts`) gates the
 two admin routes and their nav links — the backend independently enforces
