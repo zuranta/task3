@@ -14,34 +14,34 @@ export function ChatPage() {
 
   return (
     <div className="flex h-screen flex-col bg-muted/40">
-      <header className="flex shrink-0 items-center justify-between border-b border-border bg-background px-4 py-3">
-        <h1 className="text-lg font-semibold">RAG Document Q&amp;A</h1>
-        <nav className="flex items-center gap-1">
-          <Button variant="ghost" size="sm" asChild>
+      <header className="flex shrink-0 items-center justify-between gap-2 border-b border-border bg-background px-4 py-3">
+        <h1 className="truncate text-lg font-semibold">RAG Document Q&amp;A</h1>
+        <nav className="flex shrink-0 items-center gap-1">
+          <Button variant="ghost" size="sm" asChild aria-label="History">
             <Link to="/history">
               <History className="h-4 w-4" />
-              History
+              <span className="hidden sm:inline">History</span>
             </Link>
           </Button>
           {isAdmin && (
-            <Button variant="ghost" size="sm" asChild>
+            <Button variant="ghost" size="sm" asChild aria-label="Admin: Evaluation">
               <Link to="/admin/eval">
                 <ClipboardList className="h-4 w-4" />
-                Evaluation
+                <span className="hidden sm:inline">Evaluation</span>
               </Link>
             </Button>
           )}
           {isAdmin && (
-            <Button variant="ghost" size="sm" asChild>
+            <Button variant="ghost" size="sm" asChild aria-label="Admin: Operational Metrics">
               <Link to="/admin/metrics">
                 <BarChart3 className="h-4 w-4" />
-                Metrics
+                <span className="hidden sm:inline">Metrics</span>
               </Link>
             </Button>
           )}
-          <Button variant="ghost" size="sm" onClick={logout}>
+          <Button variant="ghost" size="sm" onClick={logout} aria-label="Log out">
             <LogOut className="h-4 w-4" />
-            Log out
+            <span className="hidden sm:inline">Log out</span>
           </Button>
         </nav>
       </header>
