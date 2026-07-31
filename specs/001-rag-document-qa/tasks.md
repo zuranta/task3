@@ -239,8 +239,8 @@ latency, token consumption, and error rate are all observable, broken down by st
 
 ### Tests for User Story 5
 
-- [ ] T090 [P] [US5] Contract test `GET /admin/metrics` (403 for non-admin; 200 shape with per-stage breakdown for admin) in `backend/tests/contract/test_admin_metrics.py`
-- [ ] T091 [P] [US5] Integration test: mixed success/failure traffic is reflected in metrics, data no more than 5 minutes stale in `backend/tests/integration/test_metrics_visibility.py`
+- [X] T090 [P] [US5] Contract test `GET /admin/metrics` (403 for non-admin; 200 shape with per-stage breakdown for admin) in `backend/tests/contract/test_admin_metrics.py`
+- [X] T091 [P] [US5] Integration test: mixed success/failure traffic is reflected in metrics, data no more than 5 minutes stale in `backend/tests/integration/test_metrics_visibility.py`
 
 ### Implementation for User Story 5
 
